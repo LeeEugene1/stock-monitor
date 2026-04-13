@@ -1,0 +1,262 @@
+/* Rule List */
+.rule-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-bottom: 2rem;
+}
+
+.rule-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 1.2rem;
+  background: #161b22;
+  border: 1px solid #30363d;
+  border-radius: 10px;
+  transition: border-color 0.15s;
+}
+
+.rule-item:hover {
+  border-color: #484f58;
+}
+
+.rule-item.disabled {
+  opacity: 0.5;
+}
+
+.rule-top {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.3rem;
+}
+
+.rule-stock {
+  font-weight: 600;
+  color: #f0f6fc;
+}
+
+.rule-code {
+  font-size: 0.8rem;
+  color: #8b949e;
+  font-family: monospace;
+}
+
+.rule-account {
+  font-size: 0.75rem;
+  color: #58a6ff;
+  background: rgba(88, 166, 255, 0.1);
+  padding: 0.1rem 0.45rem;
+  border-radius: 4px;
+}
+
+.rule-detail {
+  font-size: 0.85rem;
+  color: #8b949e;
+}
+
+.rule-detail strong {
+  color: #c9d1d9;
+}
+
+.rule-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.toggle-label input[type='checkbox'] {
+  width: 16px;
+  height: 16px;
+  accent-color: #238636;
+  cursor: pointer;
+}
+
+.btn-execute {
+  color: #3fb950;
+  border-color: rgba(63, 185, 80, 0.4);
+}
+
+.btn-execute:hover:not(:disabled) {
+  background: rgba(63, 185, 80, 0.15);
+}
+
+.btn-execute:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* Auto Buy Form */
+.autobuy-form {
+  background: #161b22;
+  border: 1px solid #30363d;
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.autobuy-form h3 {
+  font-size: 1.1rem;
+  color: #f0f6fc;
+  margin-bottom: 1rem;
+}
+
+.autobuy-form label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  margin-bottom: 0.8rem;
+}
+
+.autobuy-form label > span {
+  font-size: 0.85rem;
+  color: #8b949e;
+  font-weight: 500;
+}
+
+.autobuy-form input[type='text'],
+.autobuy-form input[type='number'],
+.autobuy-form select {
+  padding: 0.6rem 0.8rem;
+  background: #0d1117;
+  border: 1px solid #30363d;
+  border-radius: 6px;
+  color: #e1e4e8;
+  font-size: 0.9rem;
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+.autobuy-form input:focus,
+.autobuy-form select:focus {
+  border-color: #58a6ff;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+/* Stock search dropdown */
+.stock-search-wrap {
+  position: relative;
+}
+
+.stock-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: #161b22;
+  border: 1px solid #30363d;
+  border-radius: 8px;
+  margin-top: 4px;
+  list-style: none;
+  max-height: 250px;
+  overflow-y: auto;
+  z-index: 100;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  padding: 0;
+}
+
+.stock-dropdown li {
+  padding: 0.6rem 0.8rem;
+  cursor: pointer;
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  border-bottom: 1px solid #21262d;
+  transition: background 0.15s;
+}
+
+.stock-dropdown li:last-child {
+  border-bottom: none;
+}
+
+.stock-dropdown li:hover {
+  background: #1c2128;
+}
+
+.selected-stock {
+  font-size: 0.82rem;
+  color: #3fb950;
+  margin-top: 0.2rem;
+}
+
+/* Log Table */
+.log-table-wrapper {
+  overflow-x: auto;
+}
+
+.log-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+}
+
+.log-table th {
+  text-align: right;
+  padding: 0.6rem 0.8rem;
+  color: #8b949e;
+  font-weight: 500;
+  border-bottom: 1px solid #30363d;
+  white-space: nowrap;
+}
+
+.log-table th.left {
+  text-align: left;
+}
+
+.log-table td {
+  text-align: right;
+  padding: 0.6rem 0.8rem;
+  color: #c9d1d9;
+  border-bottom: 1px solid #21262d;
+  white-space: nowrap;
+}
+
+.log-table td.left {
+  text-align: left;
+}
+
+.log-stock {
+  font-weight: 600;
+  color: #f0f6fc;
+}
+
+.log-note {
+  font-size: 0.8rem;
+  color: #8b949e;
+  max-width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.status-badge {
+  font-size: 0.75rem;
+  font-weight: 500;
+  padding: 0.15rem 0.5rem;
+  border-radius: 4px;
+}
+
+.status-badge.success {
+  color: #3fb950;
+  background: rgba(63, 185, 80, 0.15);
+}
+
+.status-badge.failed {
+  color: #f85149;
+  background: rgba(248, 81, 73, 0.15);
+}
+
+/* Section title */
+.section-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #f0f6fc;
+  margin-bottom: 0.8rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid #21262d;
+}

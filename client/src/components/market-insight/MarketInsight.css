@@ -1,0 +1,180 @@
+/* Banner */
+.insight-banner {
+  background: #161b22;
+  border: 1px solid #30363d;
+  border-radius: 12px;
+  padding: 1.2rem 1.5rem;
+  margin-bottom: 1.5rem;
+  border-left: 3px solid #484f58;
+}
+
+.insight-banner.signal-bullish {
+  border-left-color: #3fb950;
+}
+
+.insight-banner.signal-bearish {
+  border-left-color: #f85149;
+}
+
+.insight-banner.signal-neutral {
+  border-left-color: #d29922;
+}
+
+/* Header */
+.insight-header {
+  margin-bottom: 1rem;
+}
+
+.insight-signal {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.4rem;
+}
+
+.signal-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #484f58;
+}
+
+.signal-dot.signal-bullish {
+  background: #3fb950;
+}
+
+.signal-dot.signal-bearish {
+  background: #f85149;
+}
+
+.signal-dot.signal-neutral {
+  background: #d29922;
+}
+
+.signal-text {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #f0f6fc;
+}
+
+.insight-date {
+  font-size: 0.75rem;
+  color: #484f58;
+}
+
+.insight-summary {
+  font-size: 0.88rem;
+  color: #c9d1d9;
+  line-height: 1.4;
+}
+
+/* Metrics row */
+.insight-metrics {
+  display: flex;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+  padding: 0.8rem 0;
+  border-top: 1px solid #21262d;
+  border-bottom: 1px solid #21262d;
+  margin-bottom: 0.8rem;
+}
+
+.metric {
+  display: flex;
+  align-items: baseline;
+  gap: 0.4rem;
+}
+
+.metric-name {
+  font-size: 0.75rem;
+  color: #8b949e;
+  font-weight: 500;
+}
+
+.metric-value {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: #f0f6fc;
+}
+
+.metric-change {
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.metric-change.up {
+  color: #f85149;
+}
+
+.metric-change.down {
+  color: #58a6ff;
+}
+
+/* Scores */
+.insight-scores {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 0.5rem;
+}
+
+.score-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.score-label {
+  font-size: 0.75rem;
+  color: #8b949e;
+  min-width: 65px;
+}
+
+.score-bar-track {
+  flex: 1;
+  height: 4px;
+  background: #21262d;
+  border-radius: 2px;
+  position: relative;
+  min-width: 50px;
+}
+
+.score-bar-fill {
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  top: -2px;
+  transform: translateX(-50%);
+  background: #484f58;
+}
+
+.score-bar-fill.positive {
+  background: #3fb950;
+}
+
+.score-bar-fill.negative {
+  background: #f85149;
+}
+
+.score-bar-fill.neutral {
+  background: #d29922;
+}
+
+.score-text {
+  font-size: 0.7rem;
+  font-weight: 500;
+  min-width: 50px;
+  color: #8b949e;
+}
+
+.score-text.positive {
+  color: #3fb950;
+}
+
+.score-text.negative {
+  color: #f85149;
+}
+
+.score-text.neutral {
+  color: #d29922;
+}
