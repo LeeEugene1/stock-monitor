@@ -1,22 +1,35 @@
-import type { AccountSummary } from '../../types/portfolio';
+import type { AccountPortfolio } from '../../types/portfolio';
+import { formatKRW } from '../../utils/format';
+import { BROKER_LABELS } from '../../constants';
 import './Portfolio.css';
 
 interface Props {
-  summary: AccountSummary;
+  accountPortfolio: AccountPortfolio;
   onClick: () => void;
 }
 
-function formatKRW(value: number): string {
-  if (Math.abs(value) >= 100_000_000) {
-    return `${(value / 100_000_000).toFixed(1)}억`;
-  }
-  if (Math.abs(value) >= 10_000) {
-    return `${(value / 10_000).toFixed(0)}만`;
-  }
-  return value.toLocaleString();
-}
+export function AccountCard({ accountPortfolio, onClick }: Props) {
+  const { account, summary, unsupported, error } = accountPortfolio;
 
-export function AccountCard({ summary, onClick }: Props) {
+  if (unsupported) {
+    return (
+      <div className="account-card unsupported" onClick={onClick}>
+        <div className="card-top">
+          <span className="card-nickname">
+            {account.nickname}
+            <span className={`badge-broker badge-broker-${account.broker}`}>
+              {BROKER_LABELS[account.broker] || account.broker}
+            </span>
+          </span>
+          <span className="card-arrow">&rsaquo;</span>
+        </div>
+        <div className="card-unsupported-msg">
+          {error || 'API 연동 미구현'}
+        </div>
+      </div>
+    );
+  }
+
   const plClass =
     summary.profitLossTotal > 0
       ? 'profit'
@@ -27,7 +40,12 @@ export function AccountCard({ summary, onClick }: Props) {
   return (
     <div className="account-card" onClick={onClick}>
       <div className="card-top">
-        <span className="card-nickname">{summary.nickname}</span>
+        <span className="card-nickname">
+          {account.nickname}
+          <span className={`badge-broker badge-broker-${account.broker}`}>
+            {BROKER_LABELS[account.broker] || account.broker}
+          </span>
+        </span>
         <span className="card-arrow">&rsaquo;</span>
       </div>
       <div className="card-eval">{formatKRW(summary.totalEvalAmount)}원</div>

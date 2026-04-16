@@ -65,11 +65,9 @@ export function PortfolioPage() {
       <div className="account-cards">
         {data.accounts.map((ap) => (
           <AccountCard
-            key={ap.summary.accountId}
-            summary={ap.summary}
-            onClick={() =>
-              navigate(`/portfolio/${ap.summary.accountId}`)
-            }
+            key={ap.account.id}
+            accountPortfolio={ap}
+            onClick={() => navigate(`/portfolio/${ap.account.id}`)}
           />
         ))}
       </div>

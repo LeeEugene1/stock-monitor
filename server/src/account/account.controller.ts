@@ -19,10 +19,21 @@ function maskAccount(account: Account) {
     appSecret: '********',
     accountNo: account.accountNo.slice(0, 4) + '****',
     productCode: account.productCode,
+    broker: account.broker || 'kis',
     isPaper: account.isPaper,
     createdAt: account.createdAt,
     updatedAt: account.updatedAt,
   };
+}
+
+interface AccountBody {
+  nickname?: string;
+  appKey?: string;
+  appSecret?: string;
+  accountNo?: string;
+  productCode?: string;
+  broker?: string;
+  isPaper?: boolean;
 }
 
 @Controller('api/accounts')
@@ -42,17 +53,7 @@ export class AccountController {
   }
 
   @Post()
-  async create(
-    @Body()
-    body: {
-      nickname: string;
-      appKey: string;
-      appSecret: string;
-      accountNo: string;
-      productCode?: string;
-      isPaper?: boolean;
-    },
-  ) {
+  async create(@Body() body: AccountBody) {
     const account = await this.accountService.create(body);
     return maskAccount(account);
   }
@@ -60,15 +61,7 @@ export class AccountController {
   @Put(':id')
   async update(
     @Param('id', ParseIntPipe) id: number,
-    @Body()
-    body: {
-      nickname?: string;
-      appKey?: string;
-      appSecret?: string;
-      accountNo?: string;
-      productCode?: string;
-      isPaper?: boolean;
-    },
+    @Body() body: AccountBody,
   ) {
     const account = await this.accountService.update(id, body);
     return maskAccount(account);

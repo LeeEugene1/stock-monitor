@@ -319,6 +319,13 @@ export class KisService {
       },
     );
 
+    // KIS API는 오류도 HTTP 200으로 반환. rt_cd로 판별
+    if (data.rt_cd !== '0') {
+      throw new Error(
+        `KIS 주문 실패: ${data.msg1 || data.msg_cd || 'Unknown error'} (code: ${data.rt_cd})`,
+      );
+    }
+
     const output = data.output || {};
     return {
       orderNo: output.ODNO || '',

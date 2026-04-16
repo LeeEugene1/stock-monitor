@@ -46,6 +46,13 @@
   background: rgba(88, 166, 255, 0.15);
 }
 
+.nav-actions {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
 .app-main {
   max-width: 1200px;
   margin: 0 auto;

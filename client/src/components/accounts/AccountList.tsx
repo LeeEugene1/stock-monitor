@@ -1,20 +1,6 @@
 import type { Account } from '../../types/account';
+import { BROKER_LABELS, PRODUCT_LABELS } from '../../constants';
 import './Accounts.css';
-
-const PRODUCT_LABELS: Record<string, string> = {
-  '01': '위탁',
-  '03': '선물옵션',
-  '06': 'CMA',
-  '22': '연금저축',
-  '29': '퇴직연금',
-  '00': '위탁',
-  '02': '연금저축',
-};
-
-const BROKER_LABELS: Record<string, string> = {
-  kis: '한투',
-  kiwoom: '키움',
-};
 
 interface Props {
   accounts: Account[];
@@ -34,7 +20,7 @@ export function AccountList({ accounts, onEdit, onDelete }: Props) {
           <div className="account-info">
             <div className="account-nickname">{account.nickname}</div>
             <div className="account-meta">
-              <span className="badge-broker">
+              <span className={`badge-broker badge-broker-${account.broker || 'kis'}`}>
                 {BROKER_LABELS[account.broker] || '한투'}
               </span>
               <span className="account-type">

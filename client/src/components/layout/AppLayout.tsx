@@ -1,4 +1,5 @@
 import { NavLink, Outlet } from 'react-router-dom';
+import { NotificationBell } from '../notification/NotificationBell';
 import './AppLayout.css';
 
 export function AppLayout() {
@@ -13,6 +14,9 @@ export function AppLayout() {
           <NavLink to="/portfolio">포트폴리오</NavLink>
           <NavLink to="/auto-buy">자동매수</NavLink>
           <NavLink to="/accounts">계좌관리</NavLink>
+        </div>
+        <div className="nav-actions">
+          <NotificationBell />
         </div>
       </nav>
       <main className="app-main">

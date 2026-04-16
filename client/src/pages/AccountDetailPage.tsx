@@ -30,7 +30,22 @@ export function AccountDetailPage() {
     );
   }
 
-  const { summary, holdings } = data;
+  const { account, summary, holdings, unsupported, error: apiError } = data;
+
+  if (unsupported) {
+    return (
+      <div>
+        <Link to="/portfolio" className="back-btn">
+          &larr; 포트폴리오
+        </Link>
+        <div className="detail-header">
+          <h2>{account.nickname}</h2>
+        </div>
+        <div className="empty-state">{apiError || 'API 연동 미구현'}</div>
+      </div>
+    );
+  }
+
   const plClass =
     summary.profitLossTotal > 0
       ? 'profit'
@@ -45,7 +60,7 @@ export function AccountDetailPage() {
       </Link>
 
       <div className="detail-header">
-        <h2>{summary.nickname}</h2>
+        <h2>{account.nickname}</h2>
         <div className="detail-eval">
           <div className="amount">
             {summary.totalEvalAmount.toLocaleString()}원

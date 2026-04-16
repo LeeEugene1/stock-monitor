@@ -260,3 +260,185 @@
   padding-bottom: 0.5rem;
   border-bottom: 1px solid #21262d;
 }
+
+/* Form Fieldset */
+.autobuy-form fieldset {
+  border: 1px solid #30363d;
+  border-radius: 8px;
+  padding: 1rem 1.2rem;
+  margin-bottom: 1rem;
+}
+
+.autobuy-form legend {
+  padding: 0 0.5rem;
+  color: #58a6ff;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.radio-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.radio-group > label {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center;
+  gap: 0.5rem !important;
+  flex-wrap: wrap;
+  margin-bottom: 0 !important;
+}
+
+.radio-group > label > input[type='radio'] {
+  width: 16px;
+  height: 16px;
+  accent-color: #58a6ff;
+  margin: 0;
+}
+
+.radio-group > label > span {
+  flex-shrink: 0;
+  margin: 0 !important;
+}
+
+.radio-group > label > input[type='number'] {
+  flex: 1;
+  min-width: 120px;
+  margin-left: auto;
+}
+
+.weekday-toggle {
+  display: flex;
+  gap: 0.4rem;
+  margin: 0.5rem 0;
+}
+
+.weekday-toggle button {
+  width: 38px;
+  height: 38px;
+  background: #0d1117;
+  border: 1px solid #30363d;
+  border-radius: 6px;
+  color: #8b949e;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.weekday-toggle button:hover {
+  border-color: #484f58;
+  color: #e1e4e8;
+}
+
+.weekday-toggle button.active {
+  background: rgba(88, 166, 255, 0.15);
+  border-color: #58a6ff;
+  color: #58a6ff;
+}
+
+.form-row {
+  display: flex;
+  gap: 0.8rem;
+}
+
+.form-row > label {
+  flex: 1;
+}
+
+.badge-mode {
+  font-size: 0.7rem;
+  padding: 0.1rem 0.4rem;
+  border-radius: 4px;
+  background: rgba(63, 185, 80, 0.15);
+  color: #3fb950;
+  font-weight: 500;
+}
+
+.autobuy-form .nested-fieldset {
+  margin-top: 0.6rem;
+  margin-bottom: 0.6rem;
+  padding: 0.7rem 0.9rem;
+  background: rgba(0, 0, 0, 0.2);
+}
+
+.autobuy-form .nested-fieldset legend {
+  font-size: 0.8rem;
+  color: #8b949e;
+}
+
+.rule-current-price {
+  margin-left: auto;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #f0f6fc;
+  font-family: monospace;
+}
+
+.rule-trigger-status {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+  font-size: 0.8rem;
+}
+
+.trigger-label {
+  color: #8b949e;
+}
+
+.trigger-current {
+  font-weight: 600;
+  color: #e1e4e8;
+  font-family: monospace;
+}
+
+.trigger-current.triggered {
+  color: #3fb950;
+}
+
+.trigger-arrow {
+  color: #6e7681;
+}
+
+.trigger-target {
+  color: #d29922;
+  font-family: monospace;
+}
+
+.trigger-progress {
+  flex: 1;
+  max-width: 200px;
+  height: 6px;
+  background: #21262d;
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.trigger-progress-bar {
+  height: 100%;
+  background: linear-gradient(90deg, #58a6ff, #d29922);
+  transition: width 0.3s ease;
+}
+
+.trigger-progress-bar.done {
+  background: #3fb950;
+}
+
+.badge-triggered {
+  font-size: 0.7rem;
+  padding: 0.15rem 0.5rem;
+  background: rgba(63, 185, 80, 0.2);
+  color: #3fb950;
+  border-radius: 4px;
+  font-weight: 600;
+  border: 1px solid rgba(63, 185, 80, 0.4);
+}
+
+.minus-prefix {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #58a6ff;
+  margin: 0 !important;
+}

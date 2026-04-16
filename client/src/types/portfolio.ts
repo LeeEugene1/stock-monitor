@@ -22,9 +22,19 @@ export interface AccountSummary {
   profitLossRate: number;
 }
 
+export interface AccountInfo {
+  id: number;
+  nickname: string;
+  broker: string;
+  productCode: string;
+}
+
 export interface AccountPortfolio {
+  account: AccountInfo;
   summary: AccountSummary;
   holdings: Holding[];
+  unsupported?: boolean;
+  error?: string;
 }
 
 export interface PortfolioOverview {
