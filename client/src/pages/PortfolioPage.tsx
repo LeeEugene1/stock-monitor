@@ -4,10 +4,11 @@ import { MarketInsightBanner } from '../components/market-insight/MarketInsightB
 import { PortfolioSummary } from '../components/portfolio/PortfolioSummary';
 import { AccountCard } from '../components/portfolio/AccountCard';
 import type { PortfolioOverview } from '../types/portfolio';
+import { apiFetch } from '../utils/api';
 import '../components/portfolio/Portfolio.css';
 
 async function fetchOverview(): Promise<PortfolioOverview> {
-  const res = await fetch('/api/portfolio');
+  const res = await apiFetch('/api/portfolio');
   if (!res.ok) throw new Error('Failed to fetch portfolio');
   return res.json();
 }

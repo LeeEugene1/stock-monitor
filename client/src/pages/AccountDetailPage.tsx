@@ -2,12 +2,13 @@ import { useParams, Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { HoldingsTable } from '../components/portfolio/HoldingsTable';
 import type { AccountPortfolio } from '../types/portfolio';
+import { apiFetch } from '../utils/api';
 import '../components/portfolio/Portfolio.css';
 
 async function fetchAccountPortfolio(
   accountId: string,
 ): Promise<AccountPortfolio> {
-  const res = await fetch(`/api/portfolio/${accountId}`);
+  const res = await apiFetch(`/api/portfolio/${accountId}`);
   if (!res.ok) throw new Error('Failed to fetch account portfolio');
   return res.json();
 }

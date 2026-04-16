@@ -6,9 +6,10 @@ import { StockDetailModal } from './StockDetailModal';
 import { MarketInsightBanner } from './market-insight/MarketInsightBanner';
 import { useSocket } from '../hooks/useSocket';
 import { WatchItem, StockSearchResult, SubscribeItem } from '../types/stock';
+import { apiFetch } from '../utils/api';
 
 async function fetchWatchlist(): Promise<WatchItem[]> {
-  const res = await fetch('/api/watchlist');
+  const res = await apiFetch('/api/watchlist');
   if (!res.ok) return [];
   return res.json();
 }
@@ -31,7 +32,7 @@ export function Dashboard() {
 
   const addMutation = useMutation({
     mutationFn: async (item: { code: string; name: string; category: string }) => {
-      const res = await fetch('/api/watchlist', {
+      const res = await apiFetch('/api/watchlist', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(item),
@@ -44,7 +45,7 @@ export function Dashboard() {
 
   const removeMutation = useMutation({
     mutationFn: async (code: string) => {
-      const res = await fetch(`/api/watchlist/${encodeURIComponent(code)}`, {
+      const res = await apiFetch(`/api/watchlist/${encodeURIComponent(code)}`, {
         method: 'DELETE',
       });
       if (!res.ok) throw new Error('Failed to remove');

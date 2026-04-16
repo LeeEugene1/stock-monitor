@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { HoldingByCode } from '../types/holding';
+import { apiFetch } from '../utils/api';
 
 export function useHolding(code: string, enabled: boolean = true) {
   const [data, setData] = useState<HoldingByCode | null>(null);
@@ -11,7 +12,7 @@ export function useHolding(code: string, enabled: boolean = true) {
     let cancelled = false;
     setLoading(true);
 
-    fetch(`/api/portfolio/holding/${code}`)
+    apiFetch(`/api/portfolio/holding/${code}`)
       .then((res) => (res.ok ? res.json() : null))
       .then((json) => {
         if (!cancelled) setData(json);

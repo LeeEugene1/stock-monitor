@@ -1,4 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
+import { apiFetch } from '../../utils/api';
 import './MarketInsight.css';
 
 interface Metrics {
@@ -26,7 +27,7 @@ interface Insight {
 }
 
 async function fetchInsight(): Promise<Insight | null> {
-  const res = await fetch('/api/market-insight');
+  const res = await apiFetch('/api/market-insight');
   if (!res.ok) return null;
   const data = await res.json();
   return data || null;
