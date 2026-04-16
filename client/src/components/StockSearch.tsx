@@ -1,5 +1,6 @@
 import { useState, useRef } from 'react';
 import { StockSearchResult } from '../types/stock';
+import { apiFetch } from '../utils/api';
 
 interface Props {
   onAdd: (result: StockSearchResult) => void;
@@ -23,7 +24,7 @@ export function StockSearch({ onAdd }: Props) {
     timerRef.current = setTimeout(async () => {
       setLoading(true);
       try {
-        const res = await fetch(
+        const res = await apiFetch(
           `/api/stock/search?q=${encodeURIComponent(value.trim())}`,
         );
         const data = await res.json();

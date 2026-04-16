@@ -10,6 +10,7 @@ import {
 } from '@nestjs/common';
 import { AutoBuyService } from './auto-buy.service';
 import { AutoBuyScheduler } from './auto-buy.scheduler';
+import { CurrentUser } from '../auth/decorators/current-user.decorator';
 
 @Controller('api/auto-buy')
 export class AutoBuyController {
@@ -20,13 +21,16 @@ export class AutoBuyController {
 
   // --- Rules ---
   @Get('rules')
-  findAllRules() {
-    return this.autoBuyService.findAllRules();
+  findAllRules(@CurrentUser() user: { sub: number }) {
+    return this.autoBuyService.findAllRules(user.sub);
   }
 
   @Get('rules/:id')
-  findOneRule(@Param('id', ParseIntPipe) id: number) {
-    return this.autoBuyService.findOneRule(id);
+  findOneRule(
+    @Param('id', ParseIntPipe) id: number,
+    @CurrentUser() user: { sub: number },
+  ) {
+    return this.autoBuyService.findOneRule(id, user.sub);
   }
 
   @Post('rules')
@@ -40,8 +44,9 @@ export class AutoBuyController {
       buyAmount: number;
       ordDvsn?: string;
     },
+    @CurrentUser() user: { sub: number },
   ) {
-    return this.autoBuyService.createRule(body);
+    return this.autoBuyService.createRule(body, user.sub);
   }
 
   @Put('rules/:id')
@@ -57,13 +62,17 @@ export class AutoBuyController {
       ordDvsn?: string;
       enabled?: boolean;
     },
+    @CurrentUser() user: { sub: number },
   ) {
-    return this.autoBuyService.updateRule(id, body);
+    return this.autoBuyService.updateRule(id, body, user.sub);
   }
 
   @Delete('rules/:id')
-  removeRule(@Param('id', ParseIntPipe) id: number) {
-    return this.autoBuyService.removeRule(id);
+  removeRule(
+    @Param('id', ParseIntPipe) id: number,
+    @CurrentUser() user: { sub: number },
+  ) {
+    return this.autoBuyService.removeRule(id, user.sub);
   }
 
   // --- Manual execute ---
@@ -74,7 +83,7 @@ export class AutoBuyController {
 
   // --- Logs ---
   @Get('logs')
-  findLogs() {
-    return this.autoBuyService.findLogs();
+  findLogs(@CurrentUser() user: { sub: number }) {
+    return this.autoBuyService.findLogs(user.sub);
   }
 }

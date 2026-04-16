@@ -10,6 +10,7 @@ import {
 } from '@nestjs/common';
 import { AccountService } from './account.service';
 import { Account } from './entities/account.entity';
+import { CurrentUser } from '../auth/decorators/current-user.decorator';
 
 function maskAccount(account: Account) {
   return {
@@ -30,14 +31,17 @@ export class AccountController {
   constructor(private readonly accountService: AccountService) {}
 
   @Get()
-  async findAll() {
-    const accounts = await this.accountService.findAll();
+  async findAll(@CurrentUser() user: { sub: number }) {
+    const accounts = await this.accountService.findAll(user.sub);
     return accounts.map(maskAccount);
   }
 
   @Get(':id')
-  async findOne(@Param('id', ParseIntPipe) id: number) {
-    const account = await this.accountService.findOne(id);
+  async findOne(
+    @Param('id', ParseIntPipe) id: number,
+    @CurrentUser() user: { sub: number },
+  ) {
+    const account = await this.accountService.findOne(id, user.sub);
     return maskAccount(account);
   }
 
@@ -52,8 +56,9 @@ export class AccountController {
       productCode?: string;
       isPaper?: boolean;
     },
+    @CurrentUser() user: { sub: number },
   ) {
-    const account = await this.accountService.create(body);
+    const account = await this.accountService.create(body, user.sub);
     return maskAccount(account);
   }
 
@@ -69,13 +74,17 @@ export class AccountController {
       productCode?: string;
       isPaper?: boolean;
     },
+    @CurrentUser() user: { sub: number },
   ) {
-    const account = await this.accountService.update(id, body);
+    const account = await this.accountService.update(id, body, user.sub);
     return maskAccount(account);
   }
 
   @Delete(':id')
-  remove(@Param('id', ParseIntPipe) id: number) {
-    return this.accountService.remove(id);
+  remove(
+    @Param('id', ParseIntPipe) id: number,
+    @CurrentUser() user: { sub: number },
+  ) {
+    return this.accountService.remove(id, user.sub);
   }
 }

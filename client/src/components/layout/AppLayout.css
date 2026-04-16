@@ -46,6 +46,43 @@
   background: rgba(88, 166, 255, 0.15);
 }
 
+.nav-user {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-left: auto;
+  white-space: nowrap;
+}
+
+.nav-avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 2px solid #FEE500;
+}
+
+.nav-nickname {
+  color: #e1e4e8;
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+
+.btn-logout {
+  background: transparent;
+  border: 1px solid #30363d;
+  color: #8b949e;
+  font-size: 0.8rem;
+  padding: 0.3rem 0.6rem;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s;
+}
+
+.btn-logout:hover {
+  color: #e1e4e8;
+  border-color: #8b949e;
+}
+
 .app-main {
   max-width: 1200px;
   margin: 0 auto;

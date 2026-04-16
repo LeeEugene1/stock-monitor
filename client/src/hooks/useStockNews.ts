@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { NewsItem } from '../types/news';
+import { apiFetch } from '../utils/api';
 
 export function useStockNews(code: string, enabled: boolean = true) {
   const [data, setData] = useState<NewsItem[]>([]);
@@ -13,7 +14,7 @@ export function useStockNews(code: string, enabled: boolean = true) {
     setLoading(true);
     setError(null);
 
-    fetch(`/api/news/${code}?pageSize=10&page=1`)
+    apiFetch(`/api/news/${code}?pageSize=10&page=1`)
       .then((res) => {
         if (!res.ok) throw new Error('Failed to fetch');
         return res.json();

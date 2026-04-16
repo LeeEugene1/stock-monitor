@@ -32,6 +32,9 @@ export class Account {
   @Column({ name: 'is_paper', default: false })
   isPaper: boolean;
 
+  @Column({ name: 'user_id', default: 0 })
+  userId: number;
+
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
 

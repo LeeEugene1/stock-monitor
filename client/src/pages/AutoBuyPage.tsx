@@ -4,6 +4,7 @@ import { AutoBuyRuleList } from '../components/auto-buy/AutoBuyRuleList';
 import { AutoBuyRuleForm } from '../components/auto-buy/AutoBuyRuleForm';
 import { AutoBuyLogTable } from '../components/auto-buy/AutoBuyLogTable';
 import type { Account } from '../types/account';
+import { apiFetch } from '../utils/api';
 import type {
   AutoBuyRule,
   AutoBuyRuleFormData,
@@ -13,19 +14,19 @@ import '../components/auto-buy/AutoBuy.css';
 import '../components/accounts/Accounts.css';
 
 async function fetchRules(): Promise<AutoBuyRule[]> {
-  const res = await fetch('/api/auto-buy/rules');
+  const res = await apiFetch('/api/auto-buy/rules');
   if (!res.ok) throw new Error('Failed to fetch rules');
   return res.json();
 }
 
 async function fetchLogs(): Promise<AutoBuyLog[]> {
-  const res = await fetch('/api/auto-buy/logs');
+  const res = await apiFetch('/api/auto-buy/logs');
   if (!res.ok) throw new Error('Failed to fetch logs');
   return res.json();
 }
 
 async function fetchAccounts(): Promise<Account[]> {
-  const res = await fetch('/api/accounts');
+  const res = await apiFetch('/api/accounts');
   if (!res.ok) throw new Error('Failed to fetch accounts');
   return res.json();
 }
@@ -57,7 +58,7 @@ export function AutoBuyPage() {
 
   const createMutation = useMutation({
     mutationFn: async (data: AutoBuyRuleFormData) => {
-      const res = await fetch('/api/auto-buy/rules', {
+      const res = await apiFetch('/api/auto-buy/rules', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data),
@@ -79,7 +80,7 @@ export function AutoBuyPage() {
       id: number;
       data: Partial<AutoBuyRuleFormData & { enabled: boolean }>;
     }) => {
-      const res = await fetch(`/api/auto-buy/rules/${id}`, {
+      const res = await apiFetch(`/api/auto-buy/rules/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data),
@@ -95,7 +96,7 @@ export function AutoBuyPage() {
 
   const deleteMutation = useMutation({
     mutationFn: async (id: number) => {
-      const res = await fetch(`/api/auto-buy/rules/${id}`, {
+      const res = await apiFetch(`/api/auto-buy/rules/${id}`, {
         method: 'DELETE',
       });
       if (!res.ok) throw new Error('Failed to delete rule');
@@ -105,7 +106,7 @@ export function AutoBuyPage() {
 
   const executeMutation = useMutation({
     mutationFn: async (id: number) => {
-      const res = await fetch(`/api/auto-buy/rules/${id}/execute`, {
+      const res = await apiFetch(`/api/auto-buy/rules/${id}/execute`, {
         method: 'POST',
       });
       if (!res.ok) throw new Error('Failed to execute rule');

@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { ChartDataPoint, ChartPeriod } from '../types/chart';
+import { apiFetch } from '../utils/api';
 
 export function useChartData(
   code: string,
@@ -17,7 +18,7 @@ export function useChartData(
     setLoading(true);
     setError(null);
 
-    fetch(`/api/chart/${code}?period=${period}&category=${category}`)
+    apiFetch(`/api/chart/${code}?period=${period}&category=${category}`)
       .then((res) => {
         if (!res.ok) throw new Error('Failed to fetch');
         return res.json();

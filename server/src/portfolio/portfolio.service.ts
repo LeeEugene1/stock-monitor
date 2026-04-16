@@ -44,8 +44,8 @@ export class PortfolioService {
     private readonly kisService: KisService,
   ) {}
 
-  async getOverview(): Promise<PortfolioOverview> {
-    const accounts = await this.accountService.findAll();
+  async getOverview(userId: number): Promise<PortfolioOverview> {
+    const accounts = await this.accountService.findAll(userId);
 
     const results = await Promise.allSettled(
       accounts.map(async (account) => {
@@ -103,8 +103,8 @@ export class PortfolioService {
     return { summary, holdings };
   }
 
-  async getHoldingByCode(stockCode: string): Promise<HoldingByCode | null> {
-    const accounts = await this.accountService.findAll();
+  async getHoldingByCode(stockCode: string, userId: number): Promise<HoldingByCode | null> {
+    const accounts = await this.accountService.findAll(userId);
 
     const results = await Promise.allSettled(
       accounts.map(async (account) => ({

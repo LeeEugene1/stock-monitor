@@ -22,6 +22,9 @@ export class WatchItemEntity {
   @Column({ name: 'sort_order', default: 0 })
   sortOrder: number;
 
+  @Column({ name: 'user_id', default: 0 })
+  userId: number;
+
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
 }

@@ -3,12 +3,13 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { AccountList } from '../components/accounts/AccountList';
 import { AccountForm } from '../components/accounts/AccountForm';
 import type { Account, AccountFormData } from '../types/account';
+import { apiFetch } from '../utils/api';
 import '../components/accounts/Accounts.css';
 
 const API = '/api/accounts';
 
 async function fetchAccounts(): Promise<Account[]> {
-  const res = await fetch(API);
+  const res = await apiFetch(API);
   if (!res.ok) throw new Error('Failed to fetch accounts');
   return res.json();
 }
@@ -25,7 +26,7 @@ export function AccountsPage() {
 
   const createMutation = useMutation({
     mutationFn: async (data: AccountFormData) => {
-      const res = await fetch(API, {
+      const res = await apiFetch(API, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data),
@@ -47,7 +48,7 @@ export function AccountsPage() {
       id: number;
       data: AccountFormData;
     }) => {
-      const res = await fetch(`${API}/${id}`, {
+      const res = await apiFetch(`${API}/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data),
@@ -63,7 +64,7 @@ export function AccountsPage() {
 
   const deleteMutation = useMutation({
     mutationFn: async (id: number) => {
-      const res = await fetch(`${API}/${id}`, { method: 'DELETE' });
+      const res = await apiFetch(`${API}/${id}`, { method: 'DELETE' });
       if (!res.ok) throw new Error('Failed to delete account');
     },
     onSuccess: () => {

@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import type { Account } from '../../types/account';
 import type { AutoBuyRule, AutoBuyRuleFormData } from '../../types/auto-buy';
+import { apiFetch } from '../../utils/api';
 import './AutoBuy.css';
 
 interface Props {
@@ -50,7 +51,7 @@ export function AutoBuyRuleForm({ accounts, rule, onSubmit, onCancel }: Props) {
     clearTimeout(timerRef.current);
     timerRef.current = window.setTimeout(async () => {
       try {
-        const res = await fetch(
+        const res = await apiFetch(
           `/api/stock/search?q=${encodeURIComponent(searchQuery)}`,
         );
         if (res.ok) {
