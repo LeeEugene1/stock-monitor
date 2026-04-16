@@ -30,6 +30,14 @@ export class AutoBuyService {
     });
   }
 
+  findEnabledRules(): Promise<AutoBuyRule[]> {
+    return this.ruleRepo.find({ where: { enabled: true } });
+  }
+
+  async markExecuted(id: number): Promise<void> {
+    await this.ruleRepo.update(id, { lastExecutedAt: new Date() });
+  }
+
   createRule(data: Partial<AutoBuyRule>): Promise<AutoBuyRule> {
     const rule = this.ruleRepo.create(data);
     return this.ruleRepo.save(rule);

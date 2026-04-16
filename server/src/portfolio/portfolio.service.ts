@@ -5,10 +5,20 @@ import {
   Holding,
   AccountSummary,
 } from '../kis/kis.service';
+import { KiwoomService } from '../kiwoom/kiwoom.service';
+import { Account } from '../account/entities/account.entity';
 
 export interface AccountPortfolio {
+  account: {
+    id: number;
+    nickname: string;
+    broker: string;
+    productCode: string;
+  };
   summary: AccountSummary;
   holdings: Holding[];
+  unsupported?: boolean;
+  error?: string;
 }
 
 export interface PortfolioOverview {
@@ -42,39 +52,23 @@ export class PortfolioService {
   constructor(
     private readonly accountService: AccountService,
     private readonly kisService: KisService,
+    private readonly kiwoomService: KiwoomService,
   ) {}
 
   async getOverview(): Promise<PortfolioOverview> {
     const accounts = await this.accountService.findAll();
 
-    const results = await Promise.allSettled(
-      accounts.map(async (account) => {
-        const [summary, holdings] = await Promise.all([
-          this.kisService.inquireAccountSummary(account.id),
-          this.kisService.inquireBalance(account.id),
-        ]);
-        return { summary, holdings } as AccountPortfolio;
-      }),
+    const results = await Promise.all(
+      accounts.map((account) => this.fetchAccountPortfolio(account)),
     );
-
-    const accountPortfolios: AccountPortfolio[] = [];
-    for (let i = 0; i < results.length; i++) {
-      const result = results[i];
-      if (result.status === 'fulfilled') {
-        accountPortfolios.push(result.value);
-      } else {
-        this.logger.error(
-          `Failed to fetch portfolio for account #${accounts[i].id}: ${result.reason}`,
-        );
-      }
-    }
 
     let totalPurchase = 0;
     let totalEval = 0;
     let totalDeposit = 0;
     let totalAssets = 0;
 
-    for (const ap of accountPortfolios) {
+    for (const ap of results) {
+      if (ap.unsupported) continue;
       totalPurchase += ap.summary.purchaseAmountTotal;
       totalEval += ap.summary.evalAmountTotal;
       totalDeposit += ap.summary.depositBalance;
@@ -91,16 +85,72 @@ export class PortfolioService {
         totalPurchase > 0 ? (totalProfitLoss / totalPurchase) * 100 : 0,
       totalDeposit,
       totalAssets,
-      accounts: accountPortfolios,
+      accounts: results,
     };
   }
 
   async getAccountPortfolio(accountId: number): Promise<AccountPortfolio> {
-    const [summary, holdings] = await Promise.all([
-      this.kisService.inquireAccountSummary(accountId),
-      this.kisService.inquireBalance(accountId),
-    ]);
-    return { summary, holdings };
+    const account = await this.accountService.findOne(accountId);
+    return this.fetchAccountPortfolio(account);
+  }
+
+  private async fetchAccountPortfolio(
+    account: Account,
+  ): Promise<AccountPortfolio> {
+    const accountInfo = {
+      id: account.id,
+      nickname: account.nickname,
+      broker: account.broker || 'kis',
+      productCode: account.productCode,
+    };
+
+    try {
+      const broker = account.broker || 'kis';
+      let summary: AccountSummary;
+      let holdings: Holding[];
+
+      if (broker === 'kiwoom') {
+        // 키움: 한 번의 API 호출로 잔고 + 요약 조회
+        const result = await this.kiwoomService.inquireBalanceAndSummary(
+          account.id,
+        );
+        summary = result.summary;
+        holdings = result.holdings;
+      } else {
+        // KIS: 별도 API이므로 병렬 호출
+        [summary, holdings] = await Promise.all([
+          this.kisService.inquireAccountSummary(account.id),
+          this.kisService.inquireBalance(account.id),
+        ]);
+      }
+
+      return { account: accountInfo, summary, holdings };
+    } catch (err: any) {
+      this.logger.error(
+        `Failed to fetch portfolio for account #${account.id}: ${err.message}`,
+      );
+      return {
+        account: accountInfo,
+        summary: this.emptySummary(),
+        holdings: [],
+        unsupported: true,
+        error: err.message,
+      };
+    }
+  }
+
+  private emptySummary(): AccountSummary {
+    return {
+      accountId: 0,
+      nickname: '',
+      depositBalance: 0,
+      stockEvalAmount: 0,
+      totalEvalAmount: 0,
+      purchaseAmountTotal: 0,
+      evalAmountTotal: 0,
+      profitLossTotal: 0,
+      profitLossRate: 0,
+    };
   }
 
   async getHoldingByCode(stockCode: string): Promise<HoldingByCode | null> {
@@ -109,7 +159,10 @@ export class PortfolioService {
     const results = await Promise.allSettled(
       accounts.map(async (account) => ({
         account,
-        holdings: await this.kisService.inquireBalance(account.id),
+        holdings:
+          account.broker === 'kiwoom'
+            ? await this.kiwoomService.inquireBalance(account.id)
+            : await this.kisService.inquireBalance(account.id),
       })),
     );
 

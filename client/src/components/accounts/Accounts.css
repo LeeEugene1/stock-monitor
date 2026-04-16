@@ -36,8 +36,8 @@
 }
 
 .account-type {
-  color: #58a6ff;
-  background: rgba(88, 166, 255, 0.1);
+  color: #8b949e;
+  background: rgba(139, 148, 158, 0.12);
   padding: 0.1rem 0.45rem;
   border-radius: 4px;
   font-weight: 500;
@@ -48,11 +48,19 @@
 }
 
 .badge-broker {
-  color: #3fb950;
-  background: rgba(63, 185, 80, 0.1);
   padding: 0.1rem 0.45rem;
   border-radius: 4px;
   font-weight: 500;
+}
+
+.badge-broker-kis {
+  color: #58a6ff;
+  background: rgba(88, 166, 255, 0.12);
+}
+
+.badge-broker-kiwoom {
+  color: #ff6bcb;
+  background: rgba(255, 107, 203, 0.12);
 }
 
 .badge-paper {

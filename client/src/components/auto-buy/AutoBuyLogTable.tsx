@@ -1,14 +1,17 @@
 import type { AutoBuyLog } from '../../types/auto-buy';
+import type { Account } from '../../types/account';
 import './AutoBuy.css';
 
 interface Props {
   logs: AutoBuyLog[];
+  accounts?: Account[];
 }
 
-export function AutoBuyLogTable({ logs }: Props) {
+export function AutoBuyLogTable({ logs, accounts = [] }: Props) {
   if (logs.length === 0) {
     return <div className="empty-state">실행 이력이 없습니다</div>;
   }
+  const accountMap = new Map(accounts.map((a) => [a.id, a.nickname]));
 
   return (
     <div className="log-table-wrapper">
@@ -16,6 +19,7 @@ export function AutoBuyLogTable({ logs }: Props) {
         <thead>
           <tr>
             <th className="left">일시</th>
+            <th className="left">계좌</th>
             <th className="left">종목</th>
             <th>수량</th>
             <th>단가</th>
@@ -33,6 +37,11 @@ export function AutoBuyLogTable({ logs }: Props) {
                   hour: '2-digit',
                   minute: '2-digit',
                 })}
+              </td>
+              <td className="left">
+                <span className="rule-account">
+                  {accountMap.get(log.accountId) || `#${log.accountId}`}
+                </span>
               </td>
               <td className="left">
                 <span className="log-stock">{log.stockName}</span>
