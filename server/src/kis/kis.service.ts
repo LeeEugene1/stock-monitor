@@ -43,7 +43,7 @@ export class KisService {
   ) {}
 
   async inquireBalance(accountId: number): Promise<Holding[]> {
-    const account = await this.accountService.findOne(accountId);
+    const account = await this.accountService.findOneInternal(accountId);
     // Only product_code 29 (퇴직연금) uses pension API
     // product_code 22 (개인연금저축) uses standard API
     const isPension = account.productCode === '29';
@@ -54,7 +54,7 @@ export class KisService {
   }
 
   async inquireAccountSummary(accountId: number): Promise<AccountSummary> {
-    const account = await this.accountService.findOne(accountId);
+    const account = await this.accountService.findOneInternal(accountId);
     const isPension = account.productCode === '29';
 
     if (isPension) {
@@ -297,7 +297,7 @@ export class KisService {
     price: number,
     ordDvsn: string,
   ): Promise<OrderResult> {
-    const account = await this.accountService.findOne(accountId);
+    const account = await this.accountService.findOneInternal(accountId);
     const token = await this.tokenService.getToken(accountId);
     const baseUrl = this.tokenService.getBaseUrl(account.isPaper);
     const trId = account.isPaper ? 'VTTC0012U' : 'TTTC0012U';

@@ -2,18 +2,20 @@ import {
   WebSocketGateway,
   WebSocketServer,
   SubscribeMessage,
+  OnGatewayConnection,
   OnGatewayDisconnect,
   ConnectedSocket,
   MessageBody,
 } from '@nestjs/websockets';
 import { Logger } from '@nestjs/common';
+import { JwtService } from '@nestjs/jwt';
 import { Server, Socket } from 'socket.io';
 import { StockService, SubscribeItem } from './stock.service';
 
 @WebSocketGateway({
-  cors: { origin: '*' },
+  cors: { origin: true, credentials: true },
 })
-export class StockGateway implements OnGatewayDisconnect {
+export class StockGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @WebSocketServer()
   server: Server;
 
@@ -21,7 +23,26 @@ export class StockGateway implements OnGatewayDisconnect {
   private clientSubscriptions = new Map<string, SubscribeItem[]>();
   private pollingIntervals = new Map<string, NodeJS.Timeout>();
 
-  constructor(private readonly stockService: StockService) {}
+  constructor(
+    private readonly stockService: StockService,
+    private readonly jwtService: JwtService,
+  ) {}
+
+  handleConnection(client: Socket) {
+    const token = this.extractToken(client);
+    if (!token) {
+      this.logger.warn(`Socket ${client.id} rejected: no token`);
+      client.disconnect(true);
+      return;
+    }
+    try {
+      const payload = this.jwtService.verify(token);
+      (client.data as { userId?: number }).userId = payload.sub;
+    } catch {
+      this.logger.warn(`Socket ${client.id} rejected: invalid token`);
+      client.disconnect(true);
+    }
+  }
 
   handleDisconnect(client: Socket) {
     this.logger.log(`Client disconnected: ${client.id}`);
@@ -57,6 +78,20 @@ export class StockGateway implements OnGatewayDisconnect {
     this.clientSubscriptions.delete(client.id);
     this.cleanupPolling(client.id);
     return { event: 'unsubscribed' };
+  }
+
+  private extractToken(client: Socket): string | null {
+    const authToken = (client.handshake.auth as { token?: string } | undefined)
+      ?.token;
+    if (authToken) return authToken;
+
+    const cookieHeader = client.handshake.headers.cookie;
+    if (!cookieHeader) return null;
+    for (const part of cookieHeader.split(';')) {
+      const [name, ...rest] = part.trim().split('=');
+      if (name === 'auth_token') return decodeURIComponent(rest.join('='));
+    }
+    return null;
   }
 
   private async sendImmediateUpdate(

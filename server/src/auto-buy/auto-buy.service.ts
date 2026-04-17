@@ -16,7 +16,7 @@ export class AutoBuyService {
   ) {}
 
   private async getUserAccountIds(userId: number): Promise<number[]> {
-    const accounts = await this.accountService.findAll(userId);
+    const accounts = await this.accountService.findAllByUser(userId);
     return accounts.map((a) => a.id);
   }
 

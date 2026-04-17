@@ -29,7 +29,7 @@ export class KisTokenService {
       return cached.accessToken;
     }
 
-    const account = await this.accountService.findOne(accountId);
+    const account = await this.accountService.findOneInternal(accountId);
     const baseUrl = this.getBaseUrl(account.isPaper);
 
     try {

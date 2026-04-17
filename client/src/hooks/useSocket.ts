@@ -2,9 +2,7 @@ import { useEffect, useRef, useState, useCallback } from 'react';
 import { io, Socket } from 'socket.io-client';
 import { StockPrice, SubscribeItem } from '../types/stock';
 
-const SERVER_URL = window.location.hostname === 'localhost'
-  ? 'http://localhost:3001'
-  : window.location.origin;
+const SERVER_URL = window.location.origin;
 
 export function useSocket(subscribeItems: SubscribeItem[]) {
   const socketRef = useRef<Socket | null>(null);
@@ -12,7 +10,7 @@ export function useSocket(subscribeItems: SubscribeItem[]) {
   const [connected, setConnected] = useState(false);
 
   useEffect(() => {
-    const socket = io(SERVER_URL);
+    const socket = io(SERVER_URL, { withCredentials: true });
     socketRef.current = socket;
 
     socket.on('connect', () => setConnected(true));

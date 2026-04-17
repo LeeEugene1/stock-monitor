@@ -22,7 +22,7 @@ export class AutoBuyScheduler {
   @Cron('0 30 8 * * 1-5', { timeZone: 'Asia/Seoul' })
   async refreshTokens() {
     this.logger.log('Refreshing tokens for all accounts...');
-    const accounts = await this.accountService.findAll();
+    const accounts = await this.accountService.findAllInternal();
     for (const account of accounts) {
       try {
         await this.kisTokenService.getToken(account.id);

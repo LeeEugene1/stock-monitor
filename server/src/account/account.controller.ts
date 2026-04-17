@@ -32,7 +32,7 @@ export class AccountController {
 
   @Get()
   async findAll(@CurrentUser() user: { sub: number }) {
-    const accounts = await this.accountService.findAll(user.sub);
+    const accounts = await this.accountService.findAllByUser(user.sub);
     return accounts.map(maskAccount);
   }
 
@@ -41,7 +41,7 @@ export class AccountController {
     @Param('id', ParseIntPipe) id: number,
     @CurrentUser() user: { sub: number },
   ) {
-    const account = await this.accountService.findOne(id, user.sub);
+    const account = await this.accountService.findOneByUser(id, user.sub);
     return maskAccount(account);
   }
 

@@ -10,15 +10,25 @@ export class AccountService {
     private readonly accountRepo: Repository<Account>,
   ) {}
 
-  findAll(userId?: number): Promise<Account[]> {
-    const where = userId !== undefined ? { userId } : {};
-    return this.accountRepo.find({ where, order: { id: 'ASC' } });
+  findAllByUser(userId: number): Promise<Account[]> {
+    return this.accountRepo.find({
+      where: { userId },
+      order: { id: 'ASC' },
+    });
   }
 
-  async findOne(id: number, userId?: number): Promise<Account> {
-    const where: any = { id };
-    if (userId !== undefined) where.userId = userId;
-    const account = await this.accountRepo.findOneBy(where);
+  findAllInternal(): Promise<Account[]> {
+    return this.accountRepo.find({ order: { id: 'ASC' } });
+  }
+
+  async findOneByUser(id: number, userId: number): Promise<Account> {
+    const account = await this.accountRepo.findOneBy({ id, userId });
+    if (!account) throw new NotFoundException(`Account #${id} not found`);
+    return account;
+  }
+
+  async findOneInternal(id: number): Promise<Account> {
+    const account = await this.accountRepo.findOneBy({ id });
     if (!account) throw new NotFoundException(`Account #${id} not found`);
     return account;
   }
@@ -29,7 +39,7 @@ export class AccountService {
   }
 
   async update(id: number, data: Partial<Account>, userId: number): Promise<Account> {
-    const account = await this.findOne(id, userId);
+    const account = await this.findOneByUser(id, userId);
     // 마스킹된 값이나 빈 값은 기존 값 유지
     const filtered: Partial<Account> = {};
     for (const [key, val] of Object.entries(data)) {
@@ -42,7 +52,7 @@ export class AccountService {
   }
 
   async remove(id: number, userId: number): Promise<void> {
-    const account = await this.findOne(id, userId);
+    const account = await this.findOneByUser(id, userId);
     await this.accountRepo.remove(account);
   }
 }

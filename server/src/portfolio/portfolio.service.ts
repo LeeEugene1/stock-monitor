@@ -45,7 +45,7 @@ export class PortfolioService {
   ) {}
 
   async getOverview(userId: number): Promise<PortfolioOverview> {
-    const accounts = await this.accountService.findAll(userId);
+    const accounts = await this.accountService.findAllByUser(userId);
 
     const results = await Promise.allSettled(
       accounts.map(async (account) => {
@@ -99,7 +99,7 @@ export class PortfolioService {
     accountId: number,
     userId: number,
   ): Promise<AccountPortfolio> {
-    await this.accountService.findOne(accountId, userId);
+    await this.accountService.findOneByUser(accountId, userId);
     const [summary, holdings] = await Promise.all([
       this.kisService.inquireAccountSummary(accountId),
       this.kisService.inquireBalance(accountId),
@@ -108,7 +108,7 @@ export class PortfolioService {
   }
 
   async getHoldingByCode(stockCode: string, userId: number): Promise<HoldingByCode | null> {
-    const accounts = await this.accountService.findAll(userId);
+    const accounts = await this.accountService.findAllByUser(userId);
 
     const results = await Promise.allSettled(
       accounts.map(async (account) => ({
