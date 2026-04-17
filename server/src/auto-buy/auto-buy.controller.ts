@@ -77,7 +77,11 @@ export class AutoBuyController {
 
   // --- Manual execute ---
   @Post('rules/:id/execute')
-  executeRule(@Param('id', ParseIntPipe) id: number) {
+  async executeRule(
+    @Param('id', ParseIntPipe) id: number,
+    @CurrentUser() user: { sub: number },
+  ) {
+    await this.autoBuyService.findOneRule(id, user.sub);
     return this.scheduler.executeRule(id);
   }
 

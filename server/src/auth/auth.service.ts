@@ -23,12 +23,13 @@ export class AuthService {
     this.clientUrl = this.configService.get<string>('CLIENT_URL', 'http://localhost:5173');
   }
 
-  getKakaoAuthUrl(): string {
+  getKakaoAuthUrl(state: string): string {
     return (
       `https://kauth.kakao.com/oauth/authorize` +
       `?client_id=${this.kakaoClientId}` +
       `&redirect_uri=${encodeURIComponent(this.kakaoRedirectUri)}` +
-      `&response_type=code`
+      `&response_type=code` +
+      `&state=${encodeURIComponent(state)}`
     );
   }
 

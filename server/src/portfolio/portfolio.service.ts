@@ -95,7 +95,11 @@ export class PortfolioService {
     };
   }
 
-  async getAccountPortfolio(accountId: number): Promise<AccountPortfolio> {
+  async getAccountPortfolio(
+    accountId: number,
+    userId: number,
+  ): Promise<AccountPortfolio> {
+    await this.accountService.findOne(accountId, userId);
     const [summary, holdings] = await Promise.all([
       this.kisService.inquireAccountSummary(accountId),
       this.kisService.inquireBalance(accountId),

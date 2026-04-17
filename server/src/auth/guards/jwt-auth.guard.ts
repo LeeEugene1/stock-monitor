@@ -23,17 +23,25 @@ export class JwtAuthGuard implements CanActivate {
     if (isPublic) return true;
 
     const request = context.switchToHttp().getRequest();
-    const authHeader = request.headers['authorization'];
-    if (!authHeader?.startsWith('Bearer ')) {
-      throw new UnauthorizedException();
-    }
+    const token = this.extractToken(request);
+    if (!token) throw new UnauthorizedException();
 
-    const token = authHeader.split(' ')[1];
     try {
       request.user = this.jwtService.verify(token);
       return true;
     } catch {
       throw new UnauthorizedException();
     }
+  }
+
+  private extractToken(request: {
+    headers: Record<string, string | undefined>;
+    cookies?: Record<string, string>;
+  }): string | null {
+    const authHeader = request.headers['authorization'];
+    if (authHeader?.startsWith('Bearer ')) {
+      return authHeader.split(' ')[1];
+    }
+    return request.cookies?.auth_token ?? null;
   }
 }

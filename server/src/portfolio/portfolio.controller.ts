@@ -20,7 +20,10 @@ export class PortfolioController {
   }
 
   @Get(':accountId')
-  getAccountPortfolio(@Param('accountId', ParseIntPipe) accountId: number) {
-    return this.portfolioService.getAccountPortfolio(accountId);
+  getAccountPortfolio(
+    @Param('accountId', ParseIntPipe) accountId: number,
+    @CurrentUser() user: { sub: number },
+  ) {
+    return this.portfolioService.getAccountPortfolio(accountId, user.sub);
   }
 }
