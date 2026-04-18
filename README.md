@@ -101,6 +101,14 @@ claude mcp add kis-trade-mcp --transport sse http://localhost:3000/sse -s user
 - **Backend**: NestJS + TypeScript, TypeORM + SQLite
 - **Data**: 네이버 증권 API (시세), KIS/키움 REST API (계좌)
 
+## 업데이트
+
+| 날짜 | 내용 | 상세 |
+|------|------|------|
+| 2026-04-18 | 에러 메시지 브로커별 공식 에러코드 매핑 | [v1.2.1](docs/releases/v1.2.1.md) |
+| 2026-04-16 | 키움증권 연동, 자동매수 고도화, 알림 시스템 | [v1.2.0](docs/releases/v1.2.0.md) |
+| 2026-04-12 | 멀티계좌 포트폴리오, 자동매수, 시장 인사이트 | [v1.0.0](docs/releases/v1.0.0.md) |
+
 ## 라이선스
 MIT
 
