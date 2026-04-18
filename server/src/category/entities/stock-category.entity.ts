@@ -10,10 +10,10 @@ export class StockCategory {
   @PrimaryColumn({ name: 'stock_code' })
   stockCode: string;
 
-  @Column({ nullable: true })
+  @Column({ type: 'text', nullable: true })
   category: string | null;
 
-  @Column({ name: 'auto_sector', nullable: true })
+  @Column({ name: 'auto_sector', type: 'text', nullable: true })
   autoSector: string | null;
 
   @UpdateDateColumn({ name: 'updated_at' })

@@ -2,7 +2,6 @@ import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
 import axios from 'axios';
-import * as cheerio from 'cheerio';
 import { StockCategory } from './entities/stock-category.entity';
 import { NAVER_HEADERS } from '../common/naver-http';
 
@@ -86,22 +85,32 @@ export class CategoryService {
   }
 
   private async fetchSector(stockCode: string): Promise<string | null> {
+    // 종목코드 정제 (A069500 → 069500)
+    const code = stockCode.replace(/^A/, '');
     try {
       const { data: html } = await axios.get(
-        `https://finance.naver.com/item/main.naver?code=${stockCode}`,
+        `https://finance.naver.com/item/main.naver?code=${code}`,
         { headers: NAVER_HEADERS, timeout: 5000 },
       );
-      const $ = cheerio.load(html);
-      // 우선순위 1: 구체 셀렉터
-      const direct = $('div.wrap_company .description a').first().text().trim();
-      if (direct) return direct;
-      // 우선순위 2: 정규식 fallback
-      const m = html.match(/업종[^<]*<[^>]*>([^<]+)/);
-      return m ? m[1].trim() : null;
-    } catch (err: any) {
-      this.logger.warn(
-        `Failed to fetch sector for ${stockCode}: ${err.message}`,
+
+      // 1. 일반 주식: 동종업종비교 "업종명 : <a>...</a>"
+      const stockMatch = html.match(
+        /업종명\s*:\s*<a[^>]*href=["'][^"']*upjong[^"']*["'][^>]*>([^<]+)</,
       );
+      if (stockMatch) return stockMatch[1].trim();
+
+      // 2. ETF: "<th>유형</th><td>[<span...>]해외주식형, 섹터</...></td>"
+      const etfMatch = html.match(
+        /<th[^>]*>\s*유형\s*<\/th>\s*<td[^>]*>(?:<span[^>]*>)?([^<]+)/,
+      );
+      if (etfMatch) {
+        // "해외주식형, 섹터" → 첫 항목
+        return etfMatch[1].trim().split(',')[0].trim();
+      }
+
+      return null;
+    } catch (err: any) {
+      this.logger.warn(`Failed to fetch sector for ${stockCode}: ${err.message}`);
       return null;
     }
   }
