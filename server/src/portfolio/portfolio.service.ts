@@ -8,6 +8,7 @@ import {
 import { KiwoomService } from '../kiwoom/kiwoom.service';
 import { Account } from '../account/entities/account.entity';
 import { friendlyError } from '../common/error-mapper';
+import { CategoryService } from '../category/category.service';
 
 export interface AccountPortfolio {
   account: {
@@ -22,6 +23,13 @@ export interface AccountPortfolio {
   error?: string;
 }
 
+export interface CategoryBreakdown {
+  category: string;
+  amount: number;
+  ratio: number;
+  stocks: { stockCode: string; stockName: string; amount: number }[];
+}
+
 export interface PortfolioOverview {
   totalPurchase: number;
   totalEval: number;
@@ -30,6 +38,7 @@ export interface PortfolioOverview {
   totalDeposit: number;
   totalAssets: number;
   accounts: AccountPortfolio[];
+  breakdown: CategoryBreakdown[];
 }
 
 export interface HoldingByCode {
@@ -54,6 +63,7 @@ export class PortfolioService {
     private readonly accountService: AccountService,
     private readonly kisService: KisService,
     private readonly kiwoomService: KiwoomService,
+    private readonly categoryService: CategoryService,
   ) {}
 
   async getOverview(): Promise<PortfolioOverview> {
@@ -77,6 +87,7 @@ export class PortfolioService {
     }
 
     const totalProfitLoss = totalEval - totalPurchase;
+    const breakdown = await this.computeBreakdown(results, totalEval);
 
     return {
       totalPurchase,
@@ -87,6 +98,7 @@ export class PortfolioService {
       totalDeposit,
       totalAssets,
       accounts: results,
+      breakdown,
     };
   }
 
@@ -140,6 +152,62 @@ export class PortfolioService {
     }
   }
 
+
+  private async computeBreakdown(
+    accounts: AccountPortfolio[],
+    totalEval: number,
+  ): Promise<CategoryBreakdown[]> {
+    // 전 계좌 보유종목을 종목별로 합산
+    const stockTotals = new Map<
+      string,
+      { stockName: string; amount: number }
+    >();
+    for (const ap of accounts) {
+      if (ap.unsupported) continue;
+      for (const h of ap.holdings) {
+        if (h.evalAmount <= 0) continue;
+        const existing = stockTotals.get(h.stockCode);
+        if (existing) {
+          existing.amount += h.evalAmount;
+        } else {
+          stockTotals.set(h.stockCode, {
+            stockName: h.stockName,
+            amount: h.evalAmount,
+          });
+        }
+      }
+    }
+
+    if (stockTotals.size === 0) return [];
+
+    const stockCodes = Array.from(stockTotals.keys());
+    const categoryMap = await this.categoryService.resolveCategoriesBatch(
+      stockCodes,
+    );
+
+    // 카테고리별로 그룹화
+    const grouped = new Map<string, CategoryBreakdown>();
+    for (const [stockCode, info] of stockTotals) {
+      const category = categoryMap.get(stockCode) || '기타';
+      if (!grouped.has(category)) {
+        grouped.set(category, { category, amount: 0, ratio: 0, stocks: [] });
+      }
+      const g = grouped.get(category)!;
+      g.amount += info.amount;
+      g.stocks.push({
+        stockCode,
+        stockName: info.stockName,
+        amount: info.amount,
+      });
+    }
+
+    const result = Array.from(grouped.values()).map((g) => ({
+      ...g,
+      ratio: totalEval > 0 ? (g.amount / totalEval) * 100 : 0,
+    }));
+    result.sort((a, b) => b.amount - a.amount);
+    return result;
+  }
 
   private emptySummary(): AccountSummary {
     return {

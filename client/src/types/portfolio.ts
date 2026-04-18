@@ -37,6 +37,13 @@ export interface AccountPortfolio {
   error?: string;
 }
 
+export interface CategoryBreakdown {
+  category: string;
+  amount: number;
+  ratio: number;
+  stocks: { stockCode: string; stockName: string; amount: number }[];
+}
+
 export interface PortfolioOverview {
   totalPurchase: number;
   totalEval: number;
@@ -45,4 +52,5 @@ export interface PortfolioOverview {
   totalDeposit: number;
   totalAssets: number;
   accounts: AccountPortfolio[];
+  breakdown: CategoryBreakdown[];
 }
