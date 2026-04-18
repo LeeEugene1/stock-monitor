@@ -7,6 +7,7 @@ import {
 } from '../kis/kis.service';
 import { KiwoomService } from '../kiwoom/kiwoom.service';
 import { Account } from '../account/entities/account.entity';
+import { friendlyError } from '../common/error-mapper';
 
 export interface AccountPortfolio {
   account: {
@@ -134,40 +135,11 @@ export class PortfolioService {
         summary: this.emptySummary(),
         holdings: [],
         unsupported: true,
-        error: this.friendlyError(err.message, accountInfo.broker),
+        error: friendlyError(err.message, accountInfo.broker),
       };
     }
   }
 
-  private friendlyError(message: string, broker: string): string {
-    // 공통
-    if (message.includes('timeout') || message.includes('ETIMEDOUT'))
-      return 'API 서버 응답 시간 초과';
-    if (message.includes('ECONNREFUSED')) return 'API 서버 연결 실패';
-
-    // 키움
-    if (broker === 'kiwoom') {
-      if (message.includes('8050')) return '키움 단말기 IP 등록이 필요합니다';
-      if (message.includes('8020')) return '키움 앱키가 만료되었습니다';
-      if (message.includes('token')) return '키움 인증 실패 — 앱키/시크릿 확인';
-    }
-
-    // KIS (EGW 에러코드)
-    if (broker === 'kis') {
-      if (message.includes('EGW00103')) return 'KIS 유효하지 않은 앱키입니다';
-      if (message.includes('EGW00105')) return 'KIS 유효하지 않은 앱시크릿입니다';
-      if (message.includes('EGW00121')) return 'KIS 유효하지 않은 토큰입니다';
-      if (message.includes('EGW00123')) return 'KIS 토큰이 만료되었습니다';
-      if (message.includes('EGW00201')) return 'KIS 초당 거래건수 초과';
-      if (message.includes('EGW00206')) return 'KIS API 사용 권한이 없습니다';
-      if (message.includes('EGW00207')) return 'KIS IP 주소가 유효하지 않습니다';
-      if (message.includes('EGW00304')) return 'KIS 앱시크릿이 유효하지 않습니다';
-      if (message.includes('403')) return 'KIS 인증 실패 — 앱키 확인';
-      if (message.includes('token')) return 'KIS 토큰 발급 실패';
-    }
-
-    return message;
-  }
 
   private emptySummary(): AccountSummary {
     return {
