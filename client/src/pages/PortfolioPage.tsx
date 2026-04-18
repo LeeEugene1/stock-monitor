@@ -1,7 +1,8 @@
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { MarketInsightBanner } from '../components/market-insight/MarketInsightBanner';
 import { PortfolioSummary } from '../components/portfolio/PortfolioSummary';
+import { PortfolioBreakdown } from '../components/portfolio/PortfolioBreakdown';
 import { AccountCard } from '../components/portfolio/AccountCard';
 import type { PortfolioOverview } from '../types/portfolio';
 import '../components/portfolio/Portfolio.css';
@@ -14,6 +15,7 @@ async function fetchOverview(): Promise<PortfolioOverview> {
 
 export function PortfolioPage() {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const { data, isLoading, error } = useQuery({
     queryKey: ['portfolio'],
     queryFn: fetchOverview,
@@ -60,6 +62,13 @@ export function PortfolioPage() {
         totalProfitLoss={data.totalProfitLoss}
         totalProfitLossRate={data.totalProfitLossRate}
         totalDeposit={data.totalDeposit}
+      />
+
+      <PortfolioBreakdown
+        breakdown={data.breakdown}
+        onUpdated={() =>
+          queryClient.invalidateQueries({ queryKey: ['portfolio'] })
+        }
       />
 
       <div className="account-cards">

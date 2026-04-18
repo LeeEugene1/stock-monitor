@@ -215,7 +215,7 @@ export class MarketInsightService {
     const fx = metrics.usdKrw.price;
     if (fx > 0) {
       const fxLabel = scores.fx <= -1 ? '(원화 약세 주의)' : scores.fx >= 1 ? '(원화 강세)' : '';
-      parts.push(`환율 ${fx.toFixed(0)}원${fxLabel}`);
+      parts.push(`환율 ${Math.round(fx).toLocaleString()}원${fxLabel}`);
     }
 
     // VIX

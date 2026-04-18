@@ -1,0 +1,21 @@
+import {
+  Entity,
+  PrimaryColumn,
+  Column,
+  UpdateDateColumn,
+} from 'typeorm';
+
+@Entity('stock_categories')
+export class StockCategory {
+  @PrimaryColumn({ name: 'stock_code' })
+  stockCode: string;
+
+  @Column({ type: 'text', nullable: true })
+  category: string | null;
+
+  @Column({ name: 'auto_sector', type: 'text', nullable: true })
+  autoSector: string | null;
+
+  @UpdateDateColumn({ name: 'updated_at' })
+  updatedAt: Date;
+}

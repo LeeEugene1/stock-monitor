@@ -273,6 +273,139 @@
   border-style: dashed;
 }
 
+/* Breakdown */
+.portfolio-breakdown {
+  background: #161b22;
+  border: 1px solid #30363d;
+  border-radius: 12px;
+  padding: 1.2rem 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.breakdown-title {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #f0f6fc;
+  margin-bottom: 1rem;
+}
+
+.breakdown-body {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+  align-items: center;
+}
+
+@media (max-width: 680px) {
+  .breakdown-body {
+    grid-template-columns: 1fr;
+  }
+}
+
+.breakdown-legend {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.legend-item {
+  display: grid;
+  grid-template-columns: 12px 1fr auto auto;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.4rem 0.6rem;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.legend-item:hover {
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.legend-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+
+.legend-name {
+  color: #f0f6fc;
+  font-size: 0.88rem;
+  font-weight: 500;
+}
+
+.legend-ratio {
+  color: #8b949e;
+  font-size: 0.8rem;
+  font-family: monospace;
+}
+
+.legend-amount {
+  color: #c9d1d9;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+/* Category modal (전역 modal 스타일은 App.css 재사용) */
+.modal-hint {
+  font-size: 0.82rem;
+  color: #8b949e;
+  margin-bottom: 0.8rem;
+}
+
+.edit-row {
+  display: grid;
+  grid-template-columns: 1fr 160px;
+  gap: 0.8rem;
+  margin-bottom: 0.6rem;
+  align-items: center;
+}
+
+.edit-stock-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.edit-stock-name {
+  color: #f0f6fc;
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.edit-stock-amount {
+  color: #8b949e;
+  font-size: 0.75rem;
+}
+
+.edit-row input {
+  padding: 0.5rem 0.7rem;
+  background: #0d1117;
+  border: 1px solid #30363d;
+  border-radius: 6px;
+  color: #e1e4e8;
+  font-size: 0.88rem;
+  outline: none;
+}
+
+.edit-row input:focus {
+  border-color: #58a6ff;
+}
+
+.modal-actions {
+  display: flex;
+  gap: 0.5rem;
+  padding: 1rem 1.5rem;
+  border-top: 1px solid #21262d;
+}
+
+.modal-error {
+  color: #f85149;
+  font-size: 0.85rem;
+  padding: 0.5rem 0;
+}
+
 .card-unsupported-msg {
   font-size: 0.85rem;
   color: #8b949e;
