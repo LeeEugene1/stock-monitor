@@ -24,7 +24,7 @@ export function AccountCard({ accountPortfolio, onClick }: Props) {
           <span className="card-arrow">&rsaquo;</span>
         </div>
         <div className="card-unsupported-msg">
-          {error || 'API 연동 미구현'}
+          {error || '조회 실패'}
         </div>
       </div>
     );
