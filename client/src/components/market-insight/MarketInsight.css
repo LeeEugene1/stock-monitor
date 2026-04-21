@@ -179,43 +179,43 @@
   color: #d29922;
 }
 
-/* Fear & Greed Chart */
-.fg-chart-wrap {
-  margin-top: 1rem;
-  padding-top: 1rem;
+/* Fear & Greed — collapsible chart */
+.fg-details {
+  margin-top: 0.8rem;
+  padding-top: 0.8rem;
   border-top: 1px solid #21262d;
 }
 
-.fg-chart-header {
+.fg-toggle {
+  width: 100%;
   display: flex;
-  align-items: baseline;
+  align-items: center;
   justify-content: space-between;
-  margin-bottom: 0.4rem;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-}
-
-.fg-chart-title {
-  font-size: 0.78rem;
+  background: transparent;
+  border: none;
+  padding: 0.25rem 0;
+  cursor: pointer;
   color: #8b949e;
+  font-size: 0.78rem;
   font-weight: 500;
 }
 
-.fg-chart-current {
-  display: flex;
-  align-items: baseline;
-  gap: 0.5rem;
+.fg-toggle:hover {
+  color: #c9d1d9;
 }
 
-.fg-score {
-  font-size: 1.4rem;
-  font-weight: 700;
-  letter-spacing: -0.02em;
+.fg-toggle-caret {
+  font-size: 0.8rem;
+  transition: transform 0.15s ease;
+  color: #8b949e;
 }
 
-.fg-rating {
-  font-size: 0.85rem;
-  font-weight: 600;
+.fg-toggle-caret.open {
+  transform: rotate(180deg);
+}
+
+.fg-chart-wrap {
+  margin-top: 0.6rem;
 }
 
 .fg-chart-area {

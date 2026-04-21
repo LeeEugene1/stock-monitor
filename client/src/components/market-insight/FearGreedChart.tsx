@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import {
   LineChart,
@@ -35,6 +36,14 @@ async function fetchFearGreed(): Promise<FearGreedData | null> {
   return res.json();
 }
 
+function useFearGreed() {
+  return useQuery({
+    queryKey: ['fear-greed'],
+    queryFn: fetchFearGreed,
+    staleTime: 30 * 60 * 1000,
+  });
+}
+
 const RATING_KR: Record<string, string> = {
   'extreme fear': '극도의 공포',
   fear: '공포',
@@ -60,7 +69,6 @@ function scoreColor(score: number): string {
 }
 
 function formatTick(date: string): string {
-  // YYYY-MM-DD → M/D
   const [, m, d] = date.split('-');
   return `${Number(m)}/${Number(d)}`;
 }
@@ -97,24 +105,41 @@ function ChartTooltip({ active, payload }: TooltipProps) {
   );
 }
 
-export function FearGreedChart() {
-  const { data, isLoading } = useQuery({
-    queryKey: ['fear-greed'],
-    queryFn: fetchFearGreed,
-    staleTime: 30 * 60 * 1000,
-  });
+export function FearGreedScoreItem() {
+  const { data } = useFearGreed();
+  if (!data || !data.current.timestamp) return null;
 
-  if (isLoading || !data || !data.history.length) return null;
+  const { score, rating } = data.current;
+  const color = scoreColor(score);
+  const label = RATING_KR[rating] || rating;
+  const leftPct = Math.max(0, Math.min(100, score));
+
+  return (
+    <div className="score-item">
+      <span className="score-label">탐욕지수</span>
+      <div className="score-bar-track">
+        <div
+          className="score-bar-fill"
+          style={{ left: `${leftPct}%`, background: color }}
+        />
+      </div>
+      <span className="score-text" style={{ color }}>
+        {label}
+      </span>
+    </div>
+  );
+}
+
+function FearGreedChartBody() {
+  const { data } = useFearGreed();
+  if (!data || !data.history.length) return null;
 
   const { current, history } = data;
-  const color = scoreColor(current.score);
-  const label = RATING_KR[current.rating] || current.rating;
 
   const prevWeekRating = ratingFromScore(current.previous1Week);
   const prevMonthRating = ratingFromScore(current.previous1Month);
   const prevYearRating = ratingFromScore(current.previous1Year);
 
-  // Thin out x-axis ticks (one per ~month)
   const tickStep = Math.max(1, Math.floor(history.length / 6));
   const ticks = history
     .filter((_, i) => i % tickStep === 0)
@@ -122,18 +147,6 @@ export function FearGreedChart() {
 
   return (
     <div className="fg-chart-wrap">
-      <div className="fg-chart-header">
-        <span className="fg-chart-title">CNN Fear &amp; Greed Index</span>
-        <div className="fg-chart-current">
-          <span className="fg-score" style={{ color }}>
-            {current.score.toFixed(0)}
-          </span>
-          <span className="fg-rating" style={{ color }}>
-            {label}
-          </span>
-        </div>
-      </div>
-
       <div className="fg-chart-area">
         <ResponsiveContainer width="100%" height={160}>
           <LineChart
@@ -211,6 +224,28 @@ export function FearGreedChart() {
           </span>
         </div>
       </div>
+    </div>
+  );
+}
+
+export function FearGreedDetails() {
+  const [open, setOpen] = useState(false);
+  const { data } = useFearGreed();
+  // Hide entire toggle if we have no data at all — avoid a button that does nothing
+  if (!data || !data.history.length) return null;
+
+  return (
+    <div className="fg-details">
+      <button
+        type="button"
+        className="fg-toggle"
+        aria-expanded={open}
+        onClick={() => setOpen((v) => !v)}
+      >
+        <span>탐욕지수 그래프 (CNN Fear &amp; Greed)</span>
+        <span className={`fg-toggle-caret ${open ? 'open' : ''}`}>▾</span>
+      </button>
+      {open && <FearGreedChartBody />}
     </div>
   );
 }
