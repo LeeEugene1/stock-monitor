@@ -256,8 +256,10 @@ export class AutoBuyScheduler {
         throw new Error('주문번호 없음 (체결 안 됨)');
       }
 
-      // 시장가(ordDvsn='01')는 주문 단가가 0이므로 현재가로 대체 표시
-      const loggedUnpr = ordDvsn === '01' ? stock.price : price;
+      // 시장가(ordDvsn='01')는 즉시 체결되므로 filled, 지정가는 미체결 상태로 pending
+      const isMarketOrder = ordDvsn === '01';
+      const loggedUnpr = isMarketOrder ? stock.price : price;
+      const logStatus = isMarketOrder ? 'filled' : 'pending';
 
       await this.autoBuyService.createLog({
         ruleId: rule.id,
@@ -267,16 +269,15 @@ export class AutoBuyScheduler {
         ordQty: quantity,
         ordUnpr: loggedUnpr,
         orderNo: result.orderNo,
-        status: 'success',
+        status: logStatus,
       });
 
       await this.autoBuyService.markExecuted(rule.id);
 
-      const orderTypeLabel =
-        ordDvsn === '01' ? '시장가' : '지정가';
+      const orderTypeLabel = isMarketOrder ? '시장가 체결' : '지정가 접수';
       await this.notificationService.create({
         type: 'buy_success',
-        title: `✅ 매수 주문: ${rule.stockName}`,
+        title: `${isMarketOrder ? '✅ 매수 체결' : '📝 매수 접수'}: ${rule.stockName}`,
         body: `${orderTypeLabel} ${quantity}주 @ ${loggedUnpr.toLocaleString()}원 (주문번호 ${result.orderNo})`,
         ruleId: rule.id,
       });

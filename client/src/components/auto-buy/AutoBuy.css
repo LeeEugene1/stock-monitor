@@ -245,9 +245,15 @@
   border-radius: 4px;
 }
 
-.status-badge.success {
+.status-badge.success,
+.status-badge.filled {
   color: #3fb950;
   background: rgba(63, 185, 80, 0.15);
+}
+
+.status-badge.pending {
+  color: #d29922;
+  background: rgba(210, 153, 34, 0.15);
 }
 
 .status-badge.failed {

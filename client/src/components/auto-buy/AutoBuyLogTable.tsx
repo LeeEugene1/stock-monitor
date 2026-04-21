@@ -62,7 +62,14 @@ export function AutoBuyLogTable({ logs, accounts = [] }: Props) {
                 <td>{log.ordUnpr > 0 ? log.ordUnpr.toLocaleString() : '-'}</td>
                 <td>
                   <span className={`status-badge ${log.status}`}>
-                    {log.status === 'success' ? '성공' : '실패'}
+                    {
+                      {
+                        filled: '체결',
+                        pending: '접수',
+                        failed: '실패',
+                        success: '체결',
+                      }[log.status] || log.status
+                    }
                   </span>
                 </td>
                 <td className="left log-note">
