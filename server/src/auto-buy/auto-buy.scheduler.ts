@@ -66,7 +66,19 @@ export class AutoBuyScheduler {
   // 수동 실행 (controller에서 호출)
   async executeRule(ruleId: number) {
     const rule = await this.autoBuyService.findOneRule(ruleId);
+
+    if (rule.mode === 'notify_only') {
+      await this.notificationService.create({
+        type: 'buy_time',
+        title: `매수 알림: ${rule.stockName}`,
+        body: `${rule.stockName}(${rule.stockCode}) 매수 시점입니다. 직접 매수해주세요.`,
+        ruleId: rule.id,
+      });
+      return { mode: 'notify_only', notified: true };
+    }
+
     await this.executeAutoBuy(rule);
+    return { mode: 'auto', executed: true };
   }
 
   private async evaluateRule(rule: AutoBuyRule, now: Date) {
