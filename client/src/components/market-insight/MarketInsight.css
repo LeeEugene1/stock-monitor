@@ -178,3 +178,80 @@
 .score-text.neutral {
   color: #d29922;
 }
+
+/* Fear & Greed — collapsible chart */
+.fg-details {
+  margin-top: 0.8rem;
+  padding-top: 0.8rem;
+  border-top: 1px solid #21262d;
+}
+
+.fg-toggle {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: transparent;
+  border: none;
+  padding: 0.25rem 0;
+  cursor: pointer;
+  color: #8b949e;
+  font-size: 0.78rem;
+  font-weight: 500;
+}
+
+.fg-toggle:hover {
+  color: #c9d1d9;
+}
+
+.fg-toggle-caret {
+  font-size: 0.8rem;
+  transition: transform 0.15s ease;
+  color: #8b949e;
+}
+
+.fg-toggle-caret.open {
+  transform: rotate(180deg);
+}
+
+.fg-chart-wrap {
+  margin-top: 0.6rem;
+}
+
+.fg-chart-area {
+  margin: 0 -0.3rem;
+}
+
+.fg-chart-compare {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.5rem;
+  margin-top: 0.6rem;
+  padding-top: 0.6rem;
+  border-top: 1px solid #21262d;
+}
+
+.fg-compare-item {
+  display: flex;
+  align-items: baseline;
+  gap: 0.35rem;
+  min-width: 0;
+}
+
+.fg-compare-label {
+  font-size: 0.72rem;
+  color: #8b949e;
+}
+
+.fg-compare-value {
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
+.fg-compare-rating {
+  font-size: 0.7rem;
+  color: #8b949e;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

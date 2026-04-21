@@ -15,4 +15,9 @@ export class MarketInsightController {
   generate() {
     return this.insightService.generateInsight(true);
   }
+
+  @Get('fear-greed')
+  getFearGreed() {
+    return this.insightService.getFearGreed();
+  }
 }
