@@ -2,7 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import axios from 'axios';
 import { KiwoomTokenService } from './kiwoom-token.service';
 import { AccountService } from '../account/account.service';
-import { Holding, AccountSummary } from '../kis/kis.service';
+import { Holding, AccountSummary, OrderResult } from '../kis/kis.service';
 
 @Injectable()
 export class KiwoomService {
@@ -118,6 +118,110 @@ export class KiwoomService {
         `Kiwoom balance failed for account #${accountId}: ${error?.response?.data ? JSON.stringify(error.response.data) : error.message}`,
       );
       throw error;
+    }
+  }
+
+  async orderCash(
+    accountId: number,
+    stockCode: string,
+    quantity: number,
+    price: number,
+    ordDvsn: string,
+  ): Promise<OrderResult> {
+    const account = await this.accountService.findOne(accountId);
+    const token = await this.tokenService.getToken(accountId);
+    const baseUrl = this.tokenService.getBaseUrl(account.isPaper);
+
+    // KIS ordDvsn → 키움 trde_tp
+    const trdeTp =
+      ordDvsn === '01' ? '3' : ordDvsn === '02' ? '5' : '0';
+
+    const body: Record<string, string> = {
+      dmst_stex_tp: 'KRX',
+      stk_cd: stockCode.replace(/^A/, ''),
+      ord_qty: String(quantity),
+      trde_tp: trdeTp,
+      ord_uv: trdeTp === '3' ? '' : String(price),
+      cond_uv: '',
+    };
+
+    try {
+      const { data } = await axios.post(
+        `${baseUrl}/api/dostk/ordr`,
+        body,
+        {
+          headers: {
+            'Content-Type': 'application/json;charset=UTF-8',
+            authorization: `Bearer ${token}`,
+            'api-id': 'kt10000',
+          },
+          timeout: 10000,
+        },
+      );
+
+      if (data?.return_code && data.return_code !== 0) {
+        throw new Error(
+          `키움 주문 실패: ${data.return_msg || 'unknown'} (code: ${data.return_code})`,
+        );
+      }
+
+      const orderNo = data?.ord_no || data?.output?.ord_no || '';
+      return {
+        orderNo: String(orderNo),
+        orderTime: data?.ord_tm || new Date().toISOString(),
+      };
+    } catch (error: any) {
+      const resp = error?.response?.data;
+      const msg = resp
+        ? `${resp.return_msg || JSON.stringify(resp)} (code: ${resp.return_code ?? error.response.status})`
+        : error.message;
+      this.logger.error(`Kiwoom order failed for account #${accountId}: ${msg}`);
+      throw new Error(msg);
+    }
+  }
+
+  /**
+   * 주식 취소 주문 (kt10003). 잔량 전부 취소.
+   */
+  async cancelOrder(
+    accountId: number,
+    orderNo: string,
+    stockCode: string,
+  ): Promise<void> {
+    const account = await this.accountService.findOne(accountId);
+    const token = await this.tokenService.getToken(accountId);
+    const baseUrl = this.tokenService.getBaseUrl(account.isPaper);
+
+    try {
+      const { data } = await axios.post(
+        `${baseUrl}/api/dostk/ordr`,
+        {
+          dmst_stex_tp: 'KRX',
+          orig_ord_no: orderNo,
+          stk_cd: stockCode.replace(/^A/, ''),
+          cncl_qty: '0',
+        },
+        {
+          headers: {
+            'Content-Type': 'application/json;charset=UTF-8',
+            authorization: `Bearer ${token}`,
+            'api-id': 'kt10003',
+          },
+          timeout: 10000,
+        },
+      );
+      if (data?.return_code && data.return_code !== 0) {
+        throw new Error(
+          `키움 취소 실패: ${data.return_msg || 'unknown'} (code: ${data.return_code})`,
+        );
+      }
+    } catch (error: any) {
+      const resp = error?.response?.data;
+      const msg = resp
+        ? `${resp.return_msg || JSON.stringify(resp)} (code: ${resp.return_code ?? error.response.status})`
+        : error.message;
+      this.logger.error(`Kiwoom cancel failed for #${orderNo}: ${msg}`);
+      throw new Error(msg);
     }
   }
 

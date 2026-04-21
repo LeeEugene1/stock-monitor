@@ -333,6 +333,66 @@ export class KisService {
     };
   }
 
+  /**
+   * 주문 취소. 정정취소가능 주문 조회로 조직번호 확보 후 취소 요청.
+   */
+  async cancelOrder(accountId: number, orderNo: string): Promise<void> {
+    const account = await this.accountService.findOne(accountId);
+    const token = await this.tokenService.getToken(accountId);
+    const baseUrl = this.tokenService.getBaseUrl(account.isPaper);
+
+    // 1. 정정취소 가능 주문 목록에서 해당 주문번호 매칭
+    const inquireTrId = account.isPaper ? 'VTTC0084R' : 'TTTC0084R';
+    const { data: list } = await axios.get(
+      `${baseUrl}/uapi/domestic-stock/v1/trading/inquire-psbl-rvsecncl`,
+      {
+        headers: this.buildHeaders(account, token, inquireTrId),
+        params: {
+          CANO: account.accountNo,
+          ACNT_PRDT_CD: account.productCode,
+          CTX_AREA_FK100: '',
+          CTX_AREA_NK100: '',
+          INQR_DVSN_1: '0',
+          INQR_DVSN_2: '0',
+        },
+        timeout: 10000,
+      },
+    );
+    if (list.rt_cd !== '0') {
+      throw new Error(`KIS 정정취소 조회 실패: ${list.msg1 || list.rt_cd}`);
+    }
+    const target = (list.output || []).find(
+      (o: any) => o.odno === orderNo || o.ODNO === orderNo,
+    );
+    if (!target) {
+      throw new Error(`취소 가능한 주문을 찾을 수 없음 (${orderNo})`);
+    }
+
+    // 2. 취소 요청
+    const cancelTrId = account.isPaper ? 'VTTC0803U' : 'TTTC0803U';
+    const { data } = await axios.post(
+      `${baseUrl}/uapi/domestic-stock/v1/trading/order-rvsecncl`,
+      {
+        CANO: account.accountNo,
+        ACNT_PRDT_CD: account.productCode,
+        KRX_FWDG_ORD_ORGNO: target.ord_gno_brno || '',
+        ORGN_ODNO: orderNo,
+        ORD_DVSN: target.ord_dvsn || '00',
+        RVSE_CNCL_DVSN_CD: '02',
+        ORD_QTY: '0',
+        ORD_UNPR: '0',
+        QTY_ALL_ORD_YN: 'Y',
+      },
+      {
+        headers: this.buildHeaders(account, token, cancelTrId),
+        timeout: 10000,
+      },
+    );
+    if (data.rt_cd !== '0') {
+      throw new Error(`KIS 취소 실패: ${data.msg1 || data.rt_cd}`);
+    }
+  }
+
   // --- Helpers ---
   private buildHeaders(
     account: Account,

@@ -106,6 +106,7 @@ claude mcp add kis-trade-mcp --transport sse http://localhost:3000/sse -s user
 
 | 날짜 | 내용 | 상세 |
 |------|------|------|
+| 2026-04-21 | 키움 매수 주문 API, 자동매수 브로커별 분기, 브로커 뱃지 | [v1.4.0](docs/releases/v1.4.0.md) |
 | 2026-04-21 | CNN 공포·탐욕지수 그래프 시세 탭에 추가 | [v1.5.0](docs/releases/v1.5.0.md) |
 | 2026-04-21 | 시장 인사이트 평가 섹션 복구, 시세 탭 전용 표시 | [v1.3.1](docs/releases/v1.3.1.md) |
 | 2026-04-18 | 포트폴리오 카테고리별 파이차트, 브랜딩 개선 | [v1.3.0](docs/releases/v1.3.0.md) |

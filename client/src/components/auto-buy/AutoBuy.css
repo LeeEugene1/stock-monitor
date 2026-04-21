@@ -43,6 +43,10 @@
   font-family: monospace;
 }
 
+.rule-account + .badge-broker {
+  margin-left: 0.3rem;
+}
+
 .rule-account {
   font-size: 0.75rem;
   color: #58a6ff;
@@ -87,13 +91,27 @@
   cursor: not-allowed;
 }
 
+/* Modal wrapper for autobuy form */
+.modal-content.modal-form {
+  width: min(640px, 94vw);
+  max-height: 90vh;
+  overflow-y: auto;
+  padding: 0;
+}
+
 /* Auto Buy Form */
 .autobuy-form {
   background: #161b22;
   border: 1px solid #30363d;
   border-radius: 12px;
   padding: 1.5rem;
-  margin-bottom: 1.5rem;
+  margin-bottom: 0;
+}
+
+.modal-content.modal-form .autobuy-form {
+  border: none;
+  border-radius: 12px;
+  margin-bottom: 0;
 }
 
 .autobuy-form h3 {
@@ -241,14 +259,47 @@
   border-radius: 4px;
 }
 
-.status-badge.success {
+.status-badge.success,
+.status-badge.filled {
   color: #3fb950;
   background: rgba(63, 185, 80, 0.15);
+}
+
+.status-badge.pending {
+  color: #d29922;
+  background: rgba(210, 153, 34, 0.15);
 }
 
 .status-badge.failed {
   color: #f85149;
   background: rgba(248, 81, 73, 0.15);
+}
+
+.status-cell {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.btn-cancel-log {
+  font-size: 0.7rem;
+  padding: 0.1rem 0.5rem;
+  border-radius: 4px;
+  background: transparent;
+  color: #f85149;
+  border: 1px solid rgba(248, 81, 73, 0.4);
+  cursor: pointer;
+  font-weight: 500;
+  transition: background 0.15s;
+}
+
+.btn-cancel-log:hover:not(:disabled) {
+  background: rgba(248, 81, 73, 0.15);
+}
+
+.btn-cancel-log:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 /* Section title */
@@ -441,4 +492,88 @@
   font-weight: 700;
   color: #58a6ff;
   margin: 0 !important;
+}
+
+/* Strategy Selector */
+.strategy-selector {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+  margin-bottom: 1.2rem;
+}
+
+.strategy-card {
+  background: #0d1117;
+  border: 2px solid #30363d;
+  border-radius: 10px;
+  padding: 1rem;
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.15s;
+}
+
+.strategy-card:hover {
+  border-color: #484f58;
+}
+
+.strategy-card.active {
+  border-color: #58a6ff;
+  background: rgba(88, 166, 255, 0.08);
+}
+
+.strategy-title {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #f0f6fc;
+  margin-bottom: 0.3rem;
+}
+
+.strategy-card.active .strategy-title {
+  color: #58a6ff;
+}
+
+.strategy-desc {
+  font-size: 0.8rem;
+  color: #8b949e;
+  line-height: 1.4;
+}
+
+/* Input with unit */
+.input-with-unit {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.input-with-unit input {
+  flex: 1;
+}
+
+.unit {
+  color: #8b949e;
+  font-size: 0.85rem;
+  white-space: nowrap;
+}
+
+/* Field hint */
+.field-hint {
+  font-size: 0.75rem;
+  color: #6e7681;
+  margin-top: 0.3rem;
+  line-height: 1.4;
+}
+
+.selected-price {
+  margin-left: 0.5rem;
+  font-weight: 700;
+  color: #f0f6fc;
+}
+
+.badge-strategy {
+  font-size: 0.7rem;
+  font-weight: 600;
+  padding: 0.15rem 0.5rem;
+  border: 1px solid;
+  border-radius: 4px;
+  white-space: nowrap;
 }

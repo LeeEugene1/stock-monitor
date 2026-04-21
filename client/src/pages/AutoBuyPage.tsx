@@ -145,11 +145,13 @@ export function AutoBuyPage() {
     setEditing(null);
   };
 
+  const formOpen = (showForm || editing !== null) && accounts.length > 0;
+
   return (
     <div>
       <div className="page-header">
         <h2>자동매수</h2>
-        {!showForm && !editing && accounts.length > 0 && (
+        {accounts.length > 0 && (
           <button className="btn-primary" onClick={() => setShowForm(true)}>
             + 규칙 추가
           </button>
@@ -162,13 +164,20 @@ export function AutoBuyPage() {
         </div>
       )}
 
-      {(showForm || editing) && accounts.length > 0 && (
-        <AutoBuyRuleForm
-          accounts={accounts}
-          rule={editing}
-          onSubmit={handleSubmit}
-          onCancel={handleCancel}
-        />
+      {formOpen && (
+        <div className="modal-backdrop" onClick={handleCancel}>
+          <div
+            className="modal-content modal-form"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <AutoBuyRuleForm
+              accounts={accounts}
+              rule={editing}
+              onSubmit={handleSubmit}
+              onCancel={handleCancel}
+            />
+          </div>
+        </div>
       )}
 
       <AutoBuyRuleList
@@ -186,7 +195,7 @@ export function AutoBuyPage() {
       {logs.length > 0 && (
         <>
           <h3 className="section-title">실행 이력</h3>
-          <AutoBuyLogTable logs={logs} accounts={accounts} />
+          <AutoBuyLogTable logs={logs} accounts={accounts} rules={rules} />
         </>
       )}
     </div>

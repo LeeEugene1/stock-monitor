@@ -3,6 +3,8 @@ import type { AutoBuyRule } from '../../types/auto-buy';
 import type { Account } from '../../types/account';
 import type { StockPrice } from '../../types/stock';
 import { useStockPrices } from '../../hooks/useStockPrices';
+import { BROKER_LABELS } from '../../constants';
+import { detectStrategyFromRule, STRATEGY_LABELS, STRATEGY_COLORS } from '../../utils/strategy';
 import './AutoBuy.css';
 
 const WEEKDAY_LABELS = ['', '월', '화', '수', '목', '금', '토', '일'];
@@ -57,6 +59,21 @@ function formatTrigger(rule: AutoBuyRule): string {
     default:
       return '';
   }
+}
+
+function formatStrategy(rule: AutoBuyRule): string {
+  if (
+    rule.scheduleType === 'monthly' &&
+    rule.triggerType === 'always' &&
+    rule.orderType === 'limit'
+  ) {
+    return `적립식 · 매월 ${rule.scheduleDay}일 · ${(rule.amountFixed || 0).toLocaleString()}원 · 시가-${rule.limitPriceDiscount || 0}% 지정가`;
+  }
+  if (rule.triggerType === 'drop_from_high') {
+    return `눌림장 · 고점대비 -${rule.dropPercent}% 시 · ${(rule.amountFixed || 0).toLocaleString()}원 · 시가-${rule.limitPriceDiscount || 0}% 지정가`;
+  }
+  // 고급/기타
+  return `${formatSchedule(rule)} · ${formatAmount(rule)} · ${formatTrigger(rule)}`;
 }
 
 interface TriggerStatus {
@@ -142,7 +159,13 @@ export function AutoBuyRuleList({
   onExecute,
 }: Props) {
   const accountMap = useMemo(
-    () => new Map(accounts.map((a) => [a.id, a.nickname])),
+    () =>
+      new Map(
+        accounts.map((a) => [
+          a.id,
+          { nickname: a.nickname, broker: a.broker },
+        ]),
+      ),
     [accounts],
   );
   const codes = useMemo(
@@ -160,6 +183,7 @@ export function AutoBuyRuleList({
       {rules.map((rule) => {
         const stock = prices?.get(rule.stockCode);
         const status = evaluateTrigger(rule, stock);
+        const strat = detectStrategyFromRule(rule);
         return (
         <div
           key={rule.id}
@@ -167,11 +191,31 @@ export function AutoBuyRuleList({
         >
           <div className="rule-info">
             <div className="rule-top">
+              <span
+                className="badge-strategy"
+                style={{ color: STRATEGY_COLORS[strat], borderColor: STRATEGY_COLORS[strat] }}
+              >
+                {STRATEGY_LABELS[strat]}
+              </span>
               <span className="rule-stock">{rule.stockName}</span>
               <span className="rule-code">{rule.stockCode}</span>
-              <span className="rule-account">
-                {accountMap.get(rule.accountId) || `#${rule.accountId}`}
-              </span>
+              {(() => {
+                const acc = accountMap.get(rule.accountId);
+                return (
+                  <>
+                    <span className="rule-account">
+                      {acc?.nickname || `#${rule.accountId}`}
+                    </span>
+                    {acc?.broker && (
+                      <span
+                        className={`badge-broker badge-broker-${acc.broker}`}
+                      >
+                        {BROKER_LABELS[acc.broker] || acc.broker}
+                      </span>
+                    )}
+                  </>
+                );
+              })()}
               {stock && (
                 <span className="rule-current-price">
                   {stock.price.toLocaleString()}원
@@ -179,8 +223,7 @@ export function AutoBuyRuleList({
               )}
             </div>
             <div className="rule-detail">
-              {formatSchedule(rule)} &middot; {formatAmount(rule)} &middot;{' '}
-              {formatTrigger(rule)} &middot;{' '}
+              {formatStrategy(rule)} &middot;{' '}
               <span className="badge-mode">
                 {rule.mode === 'auto' ? '자동매수' : '알림만'}
               </span>
