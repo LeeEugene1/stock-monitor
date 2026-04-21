@@ -178,3 +178,80 @@
 .score-text.neutral {
   color: #d29922;
 }
+
+/* Fear & Greed Chart */
+.fg-chart-wrap {
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid #21262d;
+}
+
+.fg-chart-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 0.4rem;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.fg-chart-title {
+  font-size: 0.78rem;
+  color: #8b949e;
+  font-weight: 500;
+}
+
+.fg-chart-current {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+}
+
+.fg-score {
+  font-size: 1.4rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.fg-rating {
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.fg-chart-area {
+  margin: 0 -0.3rem;
+}
+
+.fg-chart-compare {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.5rem;
+  margin-top: 0.6rem;
+  padding-top: 0.6rem;
+  border-top: 1px solid #21262d;
+}
+
+.fg-compare-item {
+  display: flex;
+  align-items: baseline;
+  gap: 0.35rem;
+  min-width: 0;
+}
+
+.fg-compare-label {
+  font-size: 0.72rem;
+  color: #8b949e;
+}
+
+.fg-compare-value {
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
+.fg-compare-rating {
+  font-size: 0.7rem;
+  color: #8b949e;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

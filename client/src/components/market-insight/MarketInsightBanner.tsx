@@ -1,4 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
+import { FearGreedChart } from './FearGreedChart';
 import './MarketInsight.css';
 
 interface Metrics {
@@ -148,6 +149,8 @@ export function MarketInsightBanner() {
         <ScoreBar label="환율" score={scores.fx} />
         <ScoreBar label="시장 심리" score={scores.fear} />
       </div>
+
+      <FearGreedChart />
     </div>
   );
 }
