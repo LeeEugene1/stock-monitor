@@ -8,6 +8,7 @@ import { KiwoomService } from '../kiwoom/kiwoom.service';
 import { AccountService } from '../account/account.service';
 import { StockService } from '../stock/stock.service';
 import { NotificationService } from '../notification/notification.service';
+import { roundDownToTick } from '../common/tick-size';
 
 @Injectable()
 export class AutoBuyScheduler {
@@ -223,7 +224,7 @@ export class AutoBuyScheduler {
             ? '00'
             : '02'; // conditional_limit
 
-      // 지정가 가격 계산
+      // 지정가 가격 계산 (호가 단위로 내림 처리)
       let price = 0;
       if (ordDvsn !== '01') {
         switch (rule.limitPriceMode) {
@@ -231,14 +232,13 @@ export class AutoBuyScheduler {
             price = rule.limitPriceFixed || stock.price;
             break;
           case 'discount':
-            price = Math.floor(
-              stock.price * (1 - (rule.limitPriceDiscount || 0) / 100),
-            );
+            price = stock.price * (1 - (rule.limitPriceDiscount || 0) / 100);
             break;
           case 'current':
           default:
             price = stock.price;
         }
+        price = roundDownToTick(price);
       }
 
       const account = await this.accountService.findOne(rule.accountId);
