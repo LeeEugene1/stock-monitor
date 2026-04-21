@@ -3,6 +3,7 @@ import type { AutoBuyRule } from '../../types/auto-buy';
 import type { Account } from '../../types/account';
 import type { StockPrice } from '../../types/stock';
 import { useStockPrices } from '../../hooks/useStockPrices';
+import { BROKER_LABELS } from '../../constants';
 import './AutoBuy.css';
 
 const WEEKDAY_LABELS = ['', '월', '화', '수', '목', '금', '토', '일'];
@@ -142,7 +143,13 @@ export function AutoBuyRuleList({
   onExecute,
 }: Props) {
   const accountMap = useMemo(
-    () => new Map(accounts.map((a) => [a.id, a.nickname])),
+    () =>
+      new Map(
+        accounts.map((a) => [
+          a.id,
+          { nickname: a.nickname, broker: a.broker },
+        ]),
+      ),
     [accounts],
   );
   const codes = useMemo(
@@ -169,9 +176,23 @@ export function AutoBuyRuleList({
             <div className="rule-top">
               <span className="rule-stock">{rule.stockName}</span>
               <span className="rule-code">{rule.stockCode}</span>
-              <span className="rule-account">
-                {accountMap.get(rule.accountId) || `#${rule.accountId}`}
-              </span>
+              {(() => {
+                const acc = accountMap.get(rule.accountId);
+                return (
+                  <>
+                    <span className="rule-account">
+                      {acc?.nickname || `#${rule.accountId}`}
+                    </span>
+                    {acc?.broker && (
+                      <span
+                        className={`badge-broker badge-broker-${acc.broker}`}
+                      >
+                        {BROKER_LABELS[acc.broker] || acc.broker}
+                      </span>
+                    )}
+                  </>
+                );
+              })()}
               {stock && (
                 <span className="rule-current-price">
                   {stock.price.toLocaleString()}원

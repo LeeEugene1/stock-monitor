@@ -4,6 +4,7 @@ import { AutoBuyService } from './auto-buy.service';
 import { AutoBuyRule } from './entities/auto-buy-rule.entity';
 import { KisService } from '../kis/kis.service';
 import { KisTokenService } from '../kis/kis-token.service';
+import { KiwoomService } from '../kiwoom/kiwoom.service';
 import { AccountService } from '../account/account.service';
 import { StockService } from '../stock/stock.service';
 import { NotificationService } from '../notification/notification.service';
@@ -16,6 +17,7 @@ export class AutoBuyScheduler {
     private readonly autoBuyService: AutoBuyService,
     private readonly kisService: KisService,
     private readonly kisTokenService: KisTokenService,
+    private readonly kiwoomService: KiwoomService,
     private readonly accountService: AccountService,
     private readonly stockService: StockService,
     private readonly notificationService: NotificationService,
@@ -239,7 +241,10 @@ export class AutoBuyScheduler {
         }
       }
 
-      const result = await this.kisService.orderCash(
+      const account = await this.accountService.findOne(rule.accountId);
+      const orderService =
+        account.broker === 'kiwoom' ? this.kiwoomService : this.kisService;
+      const result = await orderService.orderCash(
         rule.accountId,
         rule.stockCode,
         quantity,
@@ -247,9 +252,8 @@ export class AutoBuyScheduler {
         ordDvsn,
       );
 
-      // 주문번호가 있어야 진짜 성공
       if (!result.orderNo) {
-        throw new Error('KIS API 응답에 주문번호 없음 (체결 안 됨)');
+        throw new Error('주문번호 없음 (체결 안 됨)');
       }
 
       await this.autoBuyService.createLog({
