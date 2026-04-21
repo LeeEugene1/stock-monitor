@@ -91,13 +91,27 @@
   cursor: not-allowed;
 }
 
+/* Modal wrapper for autobuy form */
+.modal-content.modal-form {
+  width: min(640px, 94vw);
+  max-height: 90vh;
+  overflow-y: auto;
+  padding: 0;
+}
+
 /* Auto Buy Form */
 .autobuy-form {
   background: #161b22;
   border: 1px solid #30363d;
   border-radius: 12px;
   padding: 1.5rem;
-  margin-bottom: 1.5rem;
+  margin-bottom: 0;
+}
+
+.modal-content.modal-form .autobuy-form {
+  border: none;
+  border-radius: 12px;
+  margin-bottom: 0;
 }
 
 .autobuy-form h3 {
