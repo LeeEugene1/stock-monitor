@@ -9,9 +9,69 @@ const HEADERS = {
     'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36',
 };
 
+// CNN blocks requests without browser-like Origin/Referer
+const CNN_HEADERS = {
+  'User-Agent':
+    'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+  Origin: 'https://edition.cnn.com',
+  Referer: 'https://edition.cnn.com/',
+  Accept: 'application/json, text/plain, */*',
+  'Accept-Language': 'en-US,en;q=0.9',
+};
+
+export interface FearGreedPoint {
+  date: string; // YYYY-MM-DD
+  score: number;
+  rating: string;
+}
+
+export interface FearGreedData {
+  current: {
+    score: number;
+    rating: string;
+    timestamp: string;
+    previousClose: number;
+    previous1Week: number;
+    previous1Month: number;
+    previous1Year: number;
+  };
+  history: FearGreedPoint[];
+}
+
+interface CnnFearGreedResponse {
+  fear_and_greed?: {
+    score?: number;
+    rating?: string;
+    timestamp?: string;
+    previous_close?: number;
+    previous_1_week?: number;
+    previous_1_month?: number;
+    previous_1_year?: number;
+  };
+  fear_and_greed_historical?: {
+    data?: Array<{ x: number; y: number; rating: string }>;
+  };
+}
+
+const EMPTY_FEAR_GREED: FearGreedData = {
+  current: {
+    score: 0,
+    rating: 'neutral',
+    timestamp: '',
+    previousClose: 0,
+    previous1Week: 0,
+    previous1Month: 0,
+    previous1Year: 0,
+  },
+  history: [],
+};
+
 @Injectable()
 export class MarketInsightService {
   private readonly logger = new Logger(MarketInsightService.name);
+
+  private fearGreedCache: { at: number; data: FearGreedData } | null = null;
+  private readonly FEAR_GREED_TTL_MS = 60 * 60 * 1000; // 1h — CNN updates ~daily
 
   constructor(
     @InjectRepository(MarketInsight)
@@ -23,6 +83,55 @@ export class MarketInsightService {
       where: {},
       order: { date: 'DESC' },
     });
+  }
+
+  async getFearGreed(): Promise<FearGreedData> {
+    if (
+      this.fearGreedCache &&
+      Date.now() - this.fearGreedCache.at < this.FEAR_GREED_TTL_MS
+    ) {
+      return this.fearGreedCache.data;
+    }
+
+    try {
+      const { data } = await axios.get<CnnFearGreedResponse>(
+        'https://production.dataviz.cnn.io/index/fearandgreed/graphdata',
+        { headers: CNN_HEADERS, timeout: 8000 },
+      );
+
+      const fg = data?.fear_and_greed || {};
+      const hist = data?.fear_and_greed_historical?.data || [];
+
+      const result: FearGreedData = {
+        current: {
+          score: Number(fg.score) || 0,
+          rating: String(fg.rating || 'neutral'),
+          timestamp: String(fg.timestamp || ''),
+          previousClose: Number(fg.previous_close) || 0,
+          previous1Week: Number(fg.previous_1_week) || 0,
+          previous1Month: Number(fg.previous_1_month) || 0,
+          previous1Year: Number(fg.previous_1_year) || 0,
+        },
+        history: hist
+          .map((p) => {
+            const t = Number(p.x);
+            if (!Number.isFinite(t)) return null;
+            return {
+              date: new Date(t).toISOString().slice(0, 10),
+              score: Number(p.y) || 0,
+              rating: String(p.rating || 'neutral'),
+            };
+          })
+          .filter((p): p is FearGreedPoint => p !== null),
+      };
+
+      this.fearGreedCache = { at: Date.now(), data: result };
+      return result;
+    } catch (err: any) {
+      this.logger.warn(`Fear & Greed fetch failed: ${err.message}`);
+      // Serve stale cache if available; else empty payload so client hides chart
+      return this.fearGreedCache?.data || EMPTY_FEAR_GREED;
+    }
   }
 
   async generateInsight(force = false): Promise<MarketInsight> {
