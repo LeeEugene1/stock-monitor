@@ -1,5 +1,6 @@
 import type { AutoBuyLog } from '../../types/auto-buy';
 import type { Account } from '../../types/account';
+import { BROKER_LABELS } from '../../constants';
 import './AutoBuy.css';
 
 interface Props {
@@ -11,7 +12,9 @@ export function AutoBuyLogTable({ logs, accounts = [] }: Props) {
   if (logs.length === 0) {
     return <div className="empty-state">실행 이력이 없습니다</div>;
   }
-  const accountMap = new Map(accounts.map((a) => [a.id, a.nickname]));
+  const accountMap = new Map(
+    accounts.map((a) => [a.id, { nickname: a.nickname, broker: a.broker }]),
+  );
 
   return (
     <div className="log-table-wrapper">
@@ -28,38 +31,48 @@ export function AutoBuyLogTable({ logs, accounts = [] }: Props) {
           </tr>
         </thead>
         <tbody>
-          {logs.map((log) => (
-            <tr key={log.id}>
-              <td className="left">
-                {new Date(log.executedAt).toLocaleString('ko-KR', {
-                  month: '2-digit',
-                  day: '2-digit',
-                  hour: '2-digit',
-                  minute: '2-digit',
-                })}
-              </td>
-              <td className="left">
-                <span className="rule-account">
-                  {accountMap.get(log.accountId) || `#${log.accountId}`}
-                </span>
-              </td>
-              <td className="left">
-                <span className="log-stock">{log.stockName}</span>
-              </td>
-              <td>{log.ordQty > 0 ? log.ordQty.toLocaleString() : '-'}</td>
-              <td>{log.ordUnpr > 0 ? log.ordUnpr.toLocaleString() : '-'}</td>
-              <td>
-                <span className={`status-badge ${log.status}`}>
-                  {log.status === 'success' ? '성공' : '실패'}
-                </span>
-              </td>
-              <td className="left log-note">
-                {log.status === 'success'
-                  ? `주문번호 ${log.orderNo}`
-                  : log.errorMessage || ''}
-              </td>
-            </tr>
-          ))}
+          {logs.map((log) => {
+            const acc = accountMap.get(log.accountId);
+            return (
+              <tr key={log.id}>
+                <td className="left">
+                  {new Date(log.executedAt).toLocaleString('ko-KR', {
+                    month: '2-digit',
+                    day: '2-digit',
+                    hour: '2-digit',
+                    minute: '2-digit',
+                  })}
+                </td>
+                <td className="left">
+                  <span className="rule-account">
+                    {acc?.nickname || `#${log.accountId}`}
+                  </span>
+                  {acc?.broker && (
+                    <span
+                      className={`badge-broker badge-broker-${acc.broker}`}
+                    >
+                      {BROKER_LABELS[acc.broker] || acc.broker}
+                    </span>
+                  )}
+                </td>
+                <td className="left">
+                  <span className="log-stock">{log.stockName}</span>
+                </td>
+                <td>{log.ordQty > 0 ? log.ordQty.toLocaleString() : '-'}</td>
+                <td>{log.ordUnpr > 0 ? log.ordUnpr.toLocaleString() : '-'}</td>
+                <td>
+                  <span className={`status-badge ${log.status}`}>
+                    {log.status === 'success' ? '성공' : '실패'}
+                  </span>
+                </td>
+                <td className="left log-note">
+                  {log.status === 'success'
+                    ? `주문번호 ${log.orderNo}`
+                    : log.errorMessage || ''}
+                </td>
+              </tr>
+            );
+          })}
         </tbody>
       </table>
     </div>

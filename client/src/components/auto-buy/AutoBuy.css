@@ -43,6 +43,10 @@
   font-family: monospace;
 }
 
+.rule-account + .badge-broker {
+  margin-left: 0.3rem;
+}
+
 .rule-account {
   font-size: 0.75rem;
   color: #58a6ff;
