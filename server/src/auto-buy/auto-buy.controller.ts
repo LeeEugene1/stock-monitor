@@ -77,4 +77,10 @@ export class AutoBuyController {
   findLogs() {
     return this.autoBuyService.findLogs();
   }
+
+  @Post('logs/:id/cancel')
+  async cancelLog(@Param('id', ParseIntPipe) id: number) {
+    await this.autoBuyService.cancelAndRemoveLog(id);
+    return { cancelled: true };
+  }
 }

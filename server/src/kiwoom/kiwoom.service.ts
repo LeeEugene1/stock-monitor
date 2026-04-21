@@ -180,6 +180,51 @@ export class KiwoomService {
     }
   }
 
+  /**
+   * 주식 취소 주문 (kt10003). 잔량 전부 취소.
+   */
+  async cancelOrder(
+    accountId: number,
+    orderNo: string,
+    stockCode: string,
+  ): Promise<void> {
+    const account = await this.accountService.findOne(accountId);
+    const token = await this.tokenService.getToken(accountId);
+    const baseUrl = this.tokenService.getBaseUrl(account.isPaper);
+
+    try {
+      const { data } = await axios.post(
+        `${baseUrl}/api/dostk/ordr`,
+        {
+          dmst_stex_tp: 'KRX',
+          orig_ord_no: orderNo,
+          stk_cd: stockCode.replace(/^A/, ''),
+          cncl_qty: '0',
+        },
+        {
+          headers: {
+            'Content-Type': 'application/json;charset=UTF-8',
+            authorization: `Bearer ${token}`,
+            'api-id': 'kt10003',
+          },
+          timeout: 10000,
+        },
+      );
+      if (data?.return_code && data.return_code !== 0) {
+        throw new Error(
+          `키움 취소 실패: ${data.return_msg || 'unknown'} (code: ${data.return_code})`,
+        );
+      }
+    } catch (error: any) {
+      const resp = error?.response?.data;
+      const msg = resp
+        ? `${resp.return_msg || JSON.stringify(resp)} (code: ${resp.return_code ?? error.response.status})`
+        : error.message;
+      this.logger.error(`Kiwoom cancel failed for #${orderNo}: ${msg}`);
+      throw new Error(msg);
+    }
+  }
+
   private toNumber(v: any): number {
     if (v == null) return 0;
     return parseInt(String(v).replace(/,/g, ''), 10) || 0;

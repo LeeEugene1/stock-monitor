@@ -1,3 +1,4 @@
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import type { AutoBuyLog } from '../../types/auto-buy';
 import type { Account } from '../../types/account';
 import { BROKER_LABELS } from '../../constants';
@@ -9,6 +10,34 @@ interface Props {
 }
 
 export function AutoBuyLogTable({ logs, accounts = [] }: Props) {
+  const queryClient = useQueryClient();
+
+  const cancelMutation = useMutation({
+    mutationFn: async (logId: number) => {
+      const res = await fetch(`/api/auto-buy/logs/${logId}/cancel`, {
+        method: 'POST',
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.message || '취소 실패');
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['auto-buy-logs'] });
+    },
+    onError: (err: Error) => {
+      alert(`취소 실패: ${err.message}`);
+    },
+  });
+
+  const handleCancel = (logId: number) => {
+    if (
+      confirm('접수 취소하면 실행이력에서 제거됩니다. 진행하시겠습니까?')
+    ) {
+      cancelMutation.mutate(logId);
+    }
+  };
+
   if (logs.length === 0) {
     return <div className="empty-state">실행 이력이 없습니다</div>;
   }
@@ -61,21 +90,35 @@ export function AutoBuyLogTable({ logs, accounts = [] }: Props) {
                 <td>{log.ordQty > 0 ? log.ordQty.toLocaleString() : '-'}</td>
                 <td>{log.ordUnpr > 0 ? log.ordUnpr.toLocaleString() : '-'}</td>
                 <td>
-                  <span className={`status-badge ${log.status}`}>
-                    {
+                  <div className="status-cell">
+                    <span className={`status-badge ${log.status}`}>
                       {
-                        filled: '체결',
-                        pending: '접수',
-                        failed: '실패',
-                        success: '체결',
-                      }[log.status] || log.status
-                    }
-                  </span>
+                        {
+                          filled: '체결',
+                          pending: '접수',
+                          failed: '실패',
+                          success: '체결',
+                        }[log.status] || log.status
+                      }
+                    </span>
+                    {log.status === 'pending' && (
+                      <button
+                        className="btn-cancel-log"
+                        onClick={() => handleCancel(log.id)}
+                        disabled={cancelMutation.isPending}
+                        title="주문 취소"
+                      >
+                        취소
+                      </button>
+                    )}
+                  </div>
                 </td>
                 <td className="left log-note">
-                  {log.status === 'success'
+                  {log.status === 'success' || log.status === 'filled'
                     ? `주문번호 ${log.orderNo}`
-                    : log.errorMessage || ''}
+                    : log.status === 'pending'
+                      ? `주문번호 ${log.orderNo}`
+                      : log.errorMessage || ''}
                 </td>
               </tr>
             );

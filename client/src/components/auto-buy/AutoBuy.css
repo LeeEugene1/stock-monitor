@@ -261,6 +261,33 @@
   background: rgba(248, 81, 73, 0.15);
 }
 
+.status-cell {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.btn-cancel-log {
+  font-size: 0.7rem;
+  padding: 0.1rem 0.5rem;
+  border-radius: 4px;
+  background: transparent;
+  color: #f85149;
+  border: 1px solid rgba(248, 81, 73, 0.4);
+  cursor: pointer;
+  font-weight: 500;
+  transition: background 0.15s;
+}
+
+.btn-cancel-log:hover:not(:disabled) {
+  background: rgba(248, 81, 73, 0.15);
+}
+
+.btn-cancel-log:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 /* Section title */
 .section-title {
   font-size: 1rem;

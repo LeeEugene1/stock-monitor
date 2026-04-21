@@ -1,8 +1,15 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { AutoBuyRule } from './entities/auto-buy-rule.entity';
 import { AutoBuyLog } from './entities/auto-buy-log.entity';
+import { AccountService } from '../account/account.service';
+import { KisService } from '../kis/kis.service';
+import { KiwoomService } from '../kiwoom/kiwoom.service';
 
 @Injectable()
 export class AutoBuyService {
@@ -11,7 +18,33 @@ export class AutoBuyService {
     private readonly ruleRepo: Repository<AutoBuyRule>,
     @InjectRepository(AutoBuyLog)
     private readonly logRepo: Repository<AutoBuyLog>,
+    private readonly accountService: AccountService,
+    private readonly kisService: KisService,
+    private readonly kiwoomService: KiwoomService,
   ) {}
+
+  async cancelAndRemoveLog(logId: number): Promise<void> {
+    const log = await this.logRepo.findOneBy({ id: logId });
+    if (!log) throw new NotFoundException(`Log #${logId} not found`);
+    if (log.status !== 'pending') {
+      throw new BadRequestException(
+        `취소 가능한 주문이 아닙니다 (현재 상태: ${log.status})`,
+      );
+    }
+
+    const account = await this.accountService.findOne(log.accountId);
+    if (account.broker === 'kiwoom') {
+      await this.kiwoomService.cancelOrder(
+        log.accountId,
+        log.orderNo,
+        log.stockCode,
+      );
+    } else {
+      await this.kisService.cancelOrder(log.accountId, log.orderNo);
+    }
+
+    await this.logRepo.delete({ id: logId });
+  }
 
   // --- Rules CRUD ---
   findAllRules(): Promise<AutoBuyRule[]> {
