@@ -5,6 +5,7 @@ import { AutoBuyRule } from './entities/auto-buy-rule.entity';
 import { KisService } from '../kis/kis.service';
 import { KisTokenService } from '../kis/kis-token.service';
 import { KiwoomService } from '../kiwoom/kiwoom.service';
+import { KiwoomTokenService } from '../kiwoom/kiwoom-token.service';
 import { AccountService } from '../account/account.service';
 import { StockService } from '../stock/stock.service';
 import { NotificationService } from '../notification/notification.service';
@@ -19,22 +20,27 @@ export class AutoBuyScheduler {
     private readonly kisService: KisService,
     private readonly kisTokenService: KisTokenService,
     private readonly kiwoomService: KiwoomService,
+    private readonly kiwoomTokenService: KiwoomTokenService,
     private readonly accountService: AccountService,
     private readonly stockService: StockService,
     private readonly notificationService: NotificationService,
   ) {}
 
-  // 매 평일 08:30 KST — 토큰 사전 갱신
+  // 매 평일 08:30 KST — 토큰 사전 갱신 (broker별)
   @Cron('0 30 8 * * 1-5', { timeZone: 'Asia/Seoul' })
   async refreshTokens() {
     this.logger.log('Refreshing tokens for all accounts...');
     const accounts = await this.accountService.findAll();
     for (const account of accounts) {
       try {
-        await this.kisTokenService.getToken(account.id);
+        if (account.broker === 'kiwoom') {
+          await this.kiwoomTokenService.getToken(account.id);
+        } else {
+          await this.kisTokenService.getToken(account.id);
+        }
       } catch (err: any) {
         this.logger.error(
-          `Token refresh failed for account #${account.id}: ${err.message}`,
+          `Token refresh failed for account #${account.id} (${account.broker}): ${err.message}`,
         );
       }
     }
@@ -241,7 +247,10 @@ export class AutoBuyScheduler {
       if (ordDvsn !== '01') {
         switch (rule.limitPriceMode) {
           case 'fixed':
-            price = rule.limitPriceFixed || stock.price;
+            if (!rule.limitPriceFixed || rule.limitPriceFixed <= 0) {
+              throw new Error('지정가 고정가 모드인데 가격이 설정되지 않음');
+            }
+            price = rule.limitPriceFixed;
             break;
           case 'discount':
             price = stock.price * (1 - (rule.limitPriceDiscount || 0) / 100);
@@ -251,6 +260,9 @@ export class AutoBuyScheduler {
             price = stock.price;
         }
         price = roundDownToTick(price);
+        if (price <= 0) {
+          throw new Error(`지정가 계산 결과가 0원 (할인율 과다 등): ${price}`);
+        }
       }
 
       const account = await this.accountService.findOne(rule.accountId);
@@ -298,7 +310,18 @@ export class AutoBuyScheduler {
         `Order success: ${rule.stockName} x${quantity} (#${result.orderNo})`,
       );
     } catch (error: any) {
-      // 실패는 로그에 기록하지 않고 알림함에만 저장
+      await this.autoBuyService.createLog({
+        ruleId: rule.id,
+        accountId: rule.accountId,
+        stockCode: rule.stockCode,
+        stockName: rule.stockName,
+        ordQty: 0,
+        ordUnpr: 0,
+        orderNo: '',
+        status: 'failed',
+        errorMessage: error.message,
+      });
+
       await this.notificationService.create({
         type: 'buy_failed',
         title: `❌ 매수 실패: ${rule.stockName}`,
@@ -321,9 +344,11 @@ export class AutoBuyScheduler {
         throw new Error('수동 입력 모드는 아직 지원되지 않습니다');
       case 'cash_ratio': {
         if (!rule.amountRatio) return 0;
-        const summary = await this.kisService.inquireAccountSummary(
-          rule.accountId,
-        );
+        const account = await this.accountService.findOne(rule.accountId);
+        const summary =
+          account.broker === 'kiwoom'
+            ? await this.kiwoomService.inquireAccountSummary(rule.accountId)
+            : await this.kisService.inquireAccountSummary(rule.accountId);
         return Math.floor(summary.depositBalance * (rule.amountRatio / 100));
       }
       default:
