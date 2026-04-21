@@ -195,7 +195,7 @@ export function AutoBuyPage() {
       {logs.length > 0 && (
         <>
           <h3 className="section-title">실행 이력</h3>
-          <AutoBuyLogTable logs={logs} accounts={accounts} />
+          <AutoBuyLogTable logs={logs} accounts={accounts} rules={rules} />
         </>
       )}
     </div>

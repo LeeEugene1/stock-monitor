@@ -1,15 +1,17 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import type { AutoBuyLog } from '../../types/auto-buy';
+import type { AutoBuyLog, AutoBuyRule } from '../../types/auto-buy';
 import type { Account } from '../../types/account';
 import { BROKER_LABELS } from '../../constants';
+import { detectStrategyFromRule, STRATEGY_LABELS, STRATEGY_COLORS } from '../../utils/strategy';
 import './AutoBuy.css';
 
 interface Props {
   logs: AutoBuyLog[];
   accounts?: Account[];
+  rules?: AutoBuyRule[];
 }
 
-export function AutoBuyLogTable({ logs, accounts = [] }: Props) {
+export function AutoBuyLogTable({ logs, accounts = [], rules = [] }: Props) {
   const queryClient = useQueryClient();
 
   const cancelMutation = useMutation({
@@ -44,6 +46,7 @@ export function AutoBuyLogTable({ logs, accounts = [] }: Props) {
   const accountMap = new Map(
     accounts.map((a) => [a.id, { nickname: a.nickname, broker: a.broker }]),
   );
+  const ruleMap = new Map(rules.map((r) => [r.id, r]));
 
   return (
     <div className="log-table-wrapper">
@@ -51,6 +54,7 @@ export function AutoBuyLogTable({ logs, accounts = [] }: Props) {
         <thead>
           <tr>
             <th className="left">일시</th>
+            <th>전략</th>
             <th className="left">계좌</th>
             <th className="left">종목</th>
             <th>수량</th>
@@ -62,6 +66,8 @@ export function AutoBuyLogTable({ logs, accounts = [] }: Props) {
         <tbody>
           {logs.map((log) => {
             const acc = accountMap.get(log.accountId);
+            const matchedRule = ruleMap.get(log.ruleId);
+            const strat = matchedRule ? detectStrategyFromRule(matchedRule) : null;
             return (
               <tr key={log.id}>
                 <td className="left">
@@ -71,6 +77,16 @@ export function AutoBuyLogTable({ logs, accounts = [] }: Props) {
                     hour: '2-digit',
                     minute: '2-digit',
                   })}
+                </td>
+                <td>
+                  {strat && (
+                    <span
+                      className="badge-strategy"
+                      style={{ color: STRATEGY_COLORS[strat], borderColor: STRATEGY_COLORS[strat] }}
+                    >
+                      {STRATEGY_LABELS[strat]}
+                    </span>
+                  )}
                 </td>
                 <td className="left">
                   <span className="rule-account">

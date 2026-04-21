@@ -33,14 +33,24 @@ export class AutoBuyService {
     }
 
     const account = await this.accountService.findOne(log.accountId);
-    if (account.broker === 'kiwoom') {
-      await this.kiwoomService.cancelOrder(
-        log.accountId,
-        log.orderNo,
-        log.stockCode,
-      );
-    } else {
-      await this.kisService.cancelOrder(log.accountId, log.orderNo);
+    try {
+      if (account.broker === 'kiwoom') {
+        await this.kiwoomService.cancelOrder(
+          log.accountId,
+          log.orderNo,
+          log.stockCode,
+        );
+      } else {
+        await this.kisService.cancelOrder(log.accountId, log.orderNo);
+      }
+    } catch (err: any) {
+      // 장 종료 등으로 취소 실패 시에도 로컬 DB는 정리
+      const msg = err?.message || '';
+      if (msg.includes('장종료') || msg.includes('장마감')) {
+        // 장 종료 후 미체결은 자동 소멸 → 로컬만 정리
+      } else {
+        throw err;
+      }
     }
 
     await this.logRepo.delete({ id: logId });
