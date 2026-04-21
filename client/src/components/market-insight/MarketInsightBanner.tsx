@@ -9,9 +9,18 @@ interface Metrics {
   us10y: { yield: number; change: number };
 }
 
+interface Scores {
+  valuation: number;
+  rate: number;
+  fx: number;
+  fear: number;
+  overall: number;
+}
+
 interface Insight {
   date: string;
   metrics: Metrics;
+  scores: Scores;
   summary: string;
   signal: string;
 }
@@ -21,6 +30,32 @@ async function fetchInsight(): Promise<Insight | null> {
   if (!res.ok) return null;
   const data = await res.json();
   return data || null;
+}
+
+const SCORE_LABELS: Record<number, string> = {
+  [-2]: '매우 부정',
+  [-1]: '부정',
+  [0]: '중립',
+  [1]: '긍정',
+  [2]: '매우 긍정',
+};
+
+function ScoreBar({ label, score }: { label: string; score: number }) {
+  const cls = score >= 1 ? 'positive' : score <= -1 ? 'negative' : 'neutral';
+  return (
+    <div className="score-item">
+      <span className="score-label">{label}</span>
+      <div className="score-bar-track">
+        <div
+          className={`score-bar-fill ${cls}`}
+          style={{ left: `${((score + 2) / 4) * 100}%` }}
+        />
+      </div>
+      <span className={`score-text ${cls}`}>
+        {SCORE_LABELS[score] || '중립'}
+      </span>
+    </div>
+  );
 }
 
 function formatChange(val: number): string {
@@ -36,7 +71,7 @@ export function MarketInsightBanner() {
 
   if (!insight) return null;
 
-  const { metrics, signal } = insight;
+  const { metrics, scores, signal } = insight;
   const signalCls =
     signal === 'bullish'
       ? 'signal-bullish'
@@ -107,6 +142,12 @@ export function MarketInsightBanner() {
         </div>
       </div>
 
+      <div className="insight-scores">
+        <ScoreBar label="밸류에이션" score={scores.valuation} />
+        <ScoreBar label="금리 환경" score={scores.rate} />
+        <ScoreBar label="환율" score={scores.fx} />
+        <ScoreBar label="시장 심리" score={scores.fear} />
+      </div>
     </div>
   );
 }

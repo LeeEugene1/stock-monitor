@@ -105,6 +105,7 @@ claude mcp add kis-trade-mcp --transport sse http://localhost:3000/sse -s user
 
 | 날짜 | 내용 | 상세 |
 |------|------|------|
+| 2026-04-21 | 시장 인사이트 평가 섹션 복구, 시세 탭 전용 표시 | [v1.3.1](docs/releases/v1.3.1.md) |
 | 2026-04-18 | 포트폴리오 카테고리별 파이차트, 브랜딩 개선 | [v1.3.0](docs/releases/v1.3.0.md) |
 | 2026-04-18 | 에러 메시지 브로커별 공식 에러코드 매핑 | [v1.2.1](docs/releases/v1.2.1.md) |
 | 2026-04-16 | 키움증권 연동, 자동매수 고도화, 알림 시스템 | [v1.2.0](docs/releases/v1.2.0.md) |

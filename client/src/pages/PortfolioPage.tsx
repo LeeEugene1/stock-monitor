@@ -1,6 +1,5 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
-import { MarketInsightBanner } from '../components/market-insight/MarketInsightBanner';
 import { PortfolioSummary } from '../components/portfolio/PortfolioSummary';
 import { PortfolioBreakdown } from '../components/portfolio/PortfolioBreakdown';
 import { AccountCard } from '../components/portfolio/AccountCard';
@@ -49,8 +48,6 @@ export function PortfolioPage() {
 
   return (
     <div>
-      <MarketInsightBanner />
-
       <div className="page-header">
         <h2>포트폴리오</h2>
       </div>
