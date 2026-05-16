@@ -236,6 +236,7 @@
 /* Log Table */
 .log-table-wrapper {
   overflow-x: auto;
+  min-height: 320px;
 }
 
 .log-table {
