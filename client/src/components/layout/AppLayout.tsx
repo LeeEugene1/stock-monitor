@@ -6,7 +6,9 @@ export function AppLayout() {
   return (
     <div className="app-layout">
       <nav className="app-nav">
-        <div className="nav-title">Stock Monitor</div>
+        <NavLink to="/" end className="nav-title">
+          Stock Monitor
+        </NavLink>
         <div className="nav-links">
           <NavLink to="/" end>
             시세

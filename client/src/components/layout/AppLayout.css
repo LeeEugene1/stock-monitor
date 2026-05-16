@@ -19,6 +19,13 @@
   font-weight: 700;
   color: #f0f6fc;
   white-space: nowrap;
+  text-decoration: none;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+
+.nav-title:hover {
+  opacity: 0.8;
 }
 
 .nav-links {

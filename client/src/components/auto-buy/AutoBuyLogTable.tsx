@@ -1,9 +1,19 @@
+import { useMemo, useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import type { AutoBuyLog, AutoBuyRule } from '../../types/auto-buy';
 import type { Account } from '../../types/account';
 import { BROKER_LABELS } from '../../constants';
 import { detectStrategyFromRule, STRATEGY_LABELS, STRATEGY_COLORS } from '../../utils/strategy';
 import './AutoBuy.css';
+
+type LogFilter = 'all' | 'filled' | 'pending' | 'failed';
+
+const FILTER_LABELS: Record<LogFilter, string> = {
+  all: '전체',
+  filled: '체결',
+  pending: '접수',
+  failed: '실패',
+};
 
 interface Props {
   logs: AutoBuyLog[];
@@ -13,6 +23,26 @@ interface Props {
 
 export function AutoBuyLogTable({ logs, accounts = [], rules = [] }: Props) {
   const queryClient = useQueryClient();
+  const [filter, setFilter] = useState<LogFilter>('all');
+
+  const counts = useMemo(() => {
+    const c = { all: logs.length, filled: 0, pending: 0, failed: 0 };
+    for (const log of logs) {
+      if (log.status === 'filled' || log.status === 'success') c.filled++;
+      else if (log.status === 'pending') c.pending++;
+      else if (log.status === 'failed') c.failed++;
+    }
+    return c;
+  }, [logs]);
+
+  const filteredLogs = useMemo(() => {
+    if (filter === 'all') return logs;
+    if (filter === 'filled')
+      return logs.filter(
+        (l) => l.status === 'filled' || l.status === 'success',
+      );
+    return logs.filter((l) => l.status === filter);
+  }, [logs, filter]);
 
   const cancelMutation = useMutation({
     mutationFn: async (logId: number) => {
@@ -49,6 +79,19 @@ export function AutoBuyLogTable({ logs, accounts = [], rules = [] }: Props) {
   const ruleMap = new Map(rules.map((r) => [r.id, r]));
 
   return (
+    <>
+      <div className="log-filter">
+        {(['all', 'filled', 'pending', 'failed'] as LogFilter[]).map((key) => (
+          <button
+            key={key}
+            type="button"
+            className={`log-filter-btn ${filter === key ? 'active' : ''}`}
+            onClick={() => setFilter(key)}
+          >
+            {FILTER_LABELS[key]} ({counts[key]})
+          </button>
+        ))}
+      </div>
     <div className="log-table-wrapper">
       <table className="log-table">
         <thead>
@@ -64,7 +107,7 @@ export function AutoBuyLogTable({ logs, accounts = [], rules = [] }: Props) {
           </tr>
         </thead>
         <tbody>
-          {logs.map((log) => {
+          {filteredLogs.map((log) => {
             const acc = accountMap.get(log.accountId);
             const matchedRule = ruleMap.get(log.ruleId);
             const strat = matchedRule ? detectStrategyFromRule(matchedRule) : null;
@@ -142,5 +185,6 @@ export function AutoBuyLogTable({ logs, accounts = [], rules = [] }: Props) {
         </tbody>
       </table>
     </div>
+    </>
   );
 }
