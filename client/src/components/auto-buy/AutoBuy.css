@@ -203,9 +203,40 @@
   margin-top: 0.2rem;
 }
 
+/* Log Filter */
+.log-filter {
+  display: flex;
+  gap: 0.4rem;
+  margin-bottom: 0.8rem;
+}
+
+.log-filter-btn {
+  font-size: 0.8rem;
+  padding: 0.3rem 0.7rem;
+  border-radius: 6px;
+  background: #0d1117;
+  color: #8b949e;
+  border: 1px solid #30363d;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.15s;
+}
+
+.log-filter-btn:hover {
+  color: #e1e4e8;
+  border-color: #484f58;
+}
+
+.log-filter-btn.active {
+  background: rgba(88, 166, 255, 0.15);
+  color: #58a6ff;
+  border-color: #58a6ff;
+}
+
 /* Log Table */
 .log-table-wrapper {
   overflow-x: auto;
+  min-height: 320px;
 }
 
 .log-table {

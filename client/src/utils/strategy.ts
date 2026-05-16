@@ -1,4 +1,4 @@
-import type { AutoBuyRule, AutoBuyLog } from '../types/auto-buy';
+import type { AutoBuyRule } from '../types/auto-buy';
 
 export type StrategyType = 'dca' | 'dip' | 'advanced';
 
