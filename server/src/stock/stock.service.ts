@@ -1,6 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
 import axios from 'axios';
-import * as cheerio from 'cheerio';
 
 export interface StockPrice {
   code: string;
@@ -40,78 +39,109 @@ const HEADERS = {
 @Injectable()
 export class StockService {
   private readonly logger = new Logger(StockService.name);
+  private readonly stockDetailsCache = new Map<
+    string,
+    { fetchedAt: number; infos: Array<{ code: string; value: string }> }
+  >();
+  private readonly stockDetailsInFlight = new Map<
+    string,
+    Promise<Array<{ code: string; value: string }>>
+  >();
+  private readonly stockDetailsCacheTtlMs = 60_000;
 
   async getStockPrice(code: string): Promise<StockPrice | null> {
+    return this.getNaverStockPrice(code);
+  }
+
+  private async getNaverStockPrice(code: string): Promise<StockPrice | null> {
     try {
-      const url = `https://finance.naver.com/item/main.naver?code=${code}`;
-      const { data: html } = await axios.get(url, {
-        headers: HEADERS,
+      const url = `https://m.stock.naver.com/api/stock/${code}/basic`;
+      const { data } = await axios.get<any>(url, {
+        headers: { ...HEADERS, Referer: 'https://m.stock.naver.com/' },
         timeout: 5000,
       });
 
-      const $ = cheerio.load(html);
+      if (!data?.stockName || !data?.closePrice) return null;
 
-      const name = $('div.wrap_company h2 a').text().trim();
-      if (!name) return null;
+      const infos = await this.getStockDetails(code);
+      const getInfo = (key: string) =>
+        this.parseNumber(infos.find((item) => item.code === key)?.value || '');
 
-      const priceText = $('p.no_today span.blind').first().text().trim();
-      const price = this.parseNumber(priceText);
-
-      const changeEl = $('p.no_exday em span.blind');
-      const change = this.parseNumber(changeEl.first().text().trim());
-
-      const changeRateText = changeEl.eq(1).text().trim();
-      const changeRate = changeRateText ? changeRateText : '0.00%';
-
-      const isDown = $('p.no_exday em.no_down').length > 0;
-      const isUp = $('p.no_exday em.no_up').length > 0;
-      const changeType: StockPrice['changeType'] = isUp
-        ? 'up'
-        : isDown
-          ? 'down'
-          : 'none';
-
-      const tableItems = $('table.no_info tbody tr td span.blind');
-      const open = this.parseNumber(tableItems.eq(1).text().trim());
-      const high = this.parseNumber(tableItems.eq(0).text().trim());
-      const low = this.parseNumber(tableItems.eq(2).text().trim());
-      const volume = this.parseNumber(tableItems.eq(3).text().trim());
-
-      // 52주 최고/최저
-      let high52w = 0;
-      let low52w = 0;
-      $('th').each((_, el) => {
-        const thText = $(el).text().replace(/\s/g, '');
-        if (thText.includes('52주')) {
-          const td = $(el).next('td');
-          const ems = td.find('em');
-          if (ems.length >= 2) {
-            high52w = this.parseNumber(ems.eq(0).text().trim());
-            low52w = this.parseNumber(ems.eq(1).text().trim());
-          }
-        }
-      });
+      const compareCode = data.compareToPreviousPrice?.name;
+      const rawChange = this.parseFloat(data.compareToPreviousClosePrice);
+      const change =
+        compareCode === 'FALLING'
+          ? -Math.abs(rawChange)
+          : compareCode === 'RISING'
+            ? Math.abs(rawChange)
+            : rawChange;
+      const changeRateValue = this.parseFloat(data.fluctuationsRatio);
 
       return {
         code,
-        name,
-        price,
-        change: isDown ? -change : change,
-        changeRate: isDown ? `-${changeRate}` : changeRate,
-        changeType,
-        volume,
-        high,
-        low,
-        open,
-        high52w,
-        low52w,
+        name: data.stockName,
+        price: this.parseNumber(data.closePrice),
+        change,
+        changeRate: `${changeRateValue.toFixed(2)}%`,
+        changeType:
+          compareCode === 'RISING'
+            ? 'up'
+            : compareCode === 'FALLING'
+              ? 'down'
+              : 'none',
+        volume: getInfo('accumulatedTradingVolume'),
+        high: getInfo('highPrice'),
+        low: getInfo('lowPrice'),
+        open: getInfo('openPrice'),
+        high52w:
+          getInfo('highPriceOf52WeeksAdjusted') ||
+          getInfo('highPriceOf52Weeks'),
+        low52w:
+          getInfo('lowPriceOf52WeeksAdjusted') || getInfo('lowPriceOf52Weeks'),
         updatedAt: new Date().toISOString(),
         category: 'stock',
       };
     } catch (error) {
-      this.logger.error(`Failed to fetch stock price for ${code}`, error);
+      this.logger.error(`NAVER stock API failed for ${code}`, error);
       return null;
     }
+  }
+
+  private async getStockDetails(
+    code: string,
+  ): Promise<Array<{ code: string; value: string }>> {
+    const cached = this.stockDetailsCache.get(code);
+    if (cached && Date.now() - cached.fetchedAt < this.stockDetailsCacheTtlMs) {
+      return cached.infos;
+    }
+
+    const inFlight = this.stockDetailsInFlight.get(code);
+    if (inFlight) return inFlight;
+
+    const detailsUrl = `https://m.stock.naver.com/api/stock/${code}/integration`;
+    const request = axios
+      .get<any>(detailsUrl, {
+        headers: { ...HEADERS, Referer: 'https://m.stock.naver.com/' },
+        timeout: 5000,
+      })
+      .then(({ data }) => {
+        const infos: Array<{ code: string; value: string }> =
+          data?.totalInfos || [];
+        this.stockDetailsCache.set(code, { fetchedAt: Date.now(), infos });
+        return infos;
+      })
+      .catch(() => {
+        this.logger.warn(
+          `NAVER stock details API failed for ${code}; using cached empty details`,
+        );
+        const infos: Array<{ code: string; value: string }> = [];
+        this.stockDetailsCache.set(code, { fetchedAt: Date.now(), infos });
+        return infos;
+      })
+      .finally(() => this.stockDetailsInFlight.delete(code));
+
+    this.stockDetailsInFlight.set(code, request);
+    return request;
   }
 
   async getIndexPrice(reutersCode: string): Promise<StockPrice | null> {
@@ -241,6 +271,8 @@ export class StockService {
 
   private parseFloat(text: string): number {
     if (!text) return 0;
-    return Number.parseFloat(text.replace(/,/g, '').replace(/[^\d.-]/g, '')) || 0;
+    return (
+      Number.parseFloat(text.replace(/,/g, '').replace(/[^\d.-]/g, '')) || 0
+    );
   }
 }
