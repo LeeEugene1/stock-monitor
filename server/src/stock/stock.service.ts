@@ -1,6 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
 import axios from 'axios';
-import * as cheerio from 'cheerio';
 
 export interface StockPrice {
   code: string;
@@ -42,80 +41,10 @@ export class StockService {
   private readonly logger = new Logger(StockService.name);
 
   async getStockPrice(code: string): Promise<StockPrice | null> {
-    try {
-      const url = `https://finance.naver.com/item/main.naver?code=${code}`;
-      const { data: html } = await axios.get(url, {
-        headers: HEADERS,
-        timeout: 5000,
-      });
-
-      const $ = cheerio.load(html);
-
-      const name = $('div.wrap_company h2 a').text().trim();
-      // NAVER's legacy desktop page does not expose ETF details consistently.
-      if (!name) return this.getMobileStockPrice(code);
-
-      const priceText = $('p.no_today span.blind').first().text().trim();
-      const price = this.parseNumber(priceText);
-
-      const changeEl = $('p.no_exday em span.blind');
-      const change = this.parseNumber(changeEl.first().text().trim());
-
-      const changeRateText = changeEl.eq(1).text().trim();
-      const changeRate = changeRateText ? changeRateText : '0.00%';
-
-      const isDown = $('p.no_exday em.no_down').length > 0;
-      const isUp = $('p.no_exday em.no_up').length > 0;
-      const changeType: StockPrice['changeType'] = isUp
-        ? 'up'
-        : isDown
-          ? 'down'
-          : 'none';
-
-      const tableItems = $('table.no_info tbody tr td span.blind');
-      const open = this.parseNumber(tableItems.eq(1).text().trim());
-      const high = this.parseNumber(tableItems.eq(0).text().trim());
-      const low = this.parseNumber(tableItems.eq(2).text().trim());
-      const volume = this.parseNumber(tableItems.eq(3).text().trim());
-
-      // 52주 최고/최저
-      let high52w = 0;
-      let low52w = 0;
-      $('th').each((_, el) => {
-        const thText = $(el).text().replace(/\s/g, '');
-        if (thText.includes('52주')) {
-          const td = $(el).next('td');
-          const ems = td.find('em');
-          if (ems.length >= 2) {
-            high52w = this.parseNumber(ems.eq(0).text().trim());
-            low52w = this.parseNumber(ems.eq(1).text().trim());
-          }
-        }
-      });
-
-      return {
-        code,
-        name,
-        price,
-        change: isDown ? -change : change,
-        changeRate: isDown ? `-${changeRate}` : changeRate,
-        changeType,
-        volume,
-        high,
-        low,
-        open,
-        high52w,
-        low52w,
-        updatedAt: new Date().toISOString(),
-        category: 'stock',
-      };
-    } catch (error) {
-      this.logger.warn(`Legacy stock page failed for ${code}; trying mobile API`);
-      return this.getMobileStockPrice(code);
-    }
+    return this.getNaverStockPrice(code);
   }
 
-  private async getMobileStockPrice(code: string): Promise<StockPrice | null> {
+  private async getNaverStockPrice(code: string): Promise<StockPrice | null> {
     try {
       const url = `https://m.stock.naver.com/api/stock/${code}/basic`;
       const { data } = await axios.get<any>(url, {
@@ -130,7 +59,7 @@ export class StockService {
         .get<any>(detailsUrl, {
           headers: { ...HEADERS, Referer: 'https://m.stock.naver.com/' },
           timeout: 5000,
-        })
+      })
         .catch(() => null);
       const infos: Array<{ code: string; value: string }> =
         detailsResponse?.data?.totalInfos || [];
@@ -169,7 +98,7 @@ export class StockService {
         category: 'stock',
       };
     } catch (error) {
-      this.logger.error(`Mobile stock API failed for ${code}`, error);
+      this.logger.error(`NAVER stock API failed for ${code}`, error);
       return null;
     }
   }
@@ -304,3 +233,213 @@ export class StockService {
     return Number.parseFloat(text.replace(/,/g, '').replace(/[^\d.-]/g, '')) || 0;
   }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
