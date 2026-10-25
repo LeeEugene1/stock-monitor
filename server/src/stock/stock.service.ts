@@ -52,7 +52,8 @@ export class StockService {
       const $ = cheerio.load(html);
 
       const name = $('div.wrap_company h2 a').text().trim();
-      if (!name) return null;
+      // NAVER's legacy desktop page does not expose ETF details consistently.
+      if (!name) return this.getMobileStockPrice(code);
 
       const priceText = $('p.no_today span.blind').first().text().trim();
       const price = this.parseNumber(priceText);
@@ -109,7 +110,66 @@ export class StockService {
         category: 'stock',
       };
     } catch (error) {
-      this.logger.error(`Failed to fetch stock price for ${code}`, error);
+      this.logger.warn(`Legacy stock page failed for ${code}; trying mobile API`);
+      return this.getMobileStockPrice(code);
+    }
+  }
+
+  private async getMobileStockPrice(code: string): Promise<StockPrice | null> {
+    try {
+      const url = `https://m.stock.naver.com/api/stock/${code}/basic`;
+      const { data } = await axios.get<any>(url, {
+        headers: { ...HEADERS, Referer: 'https://m.stock.naver.com/' },
+        timeout: 5000,
+      });
+
+      if (!data?.stockName || !data?.closePrice) return null;
+
+      const detailsUrl = `https://m.stock.naver.com/api/stock/${code}/integration`;
+      const detailsResponse = await axios
+        .get<any>(detailsUrl, {
+          headers: { ...HEADERS, Referer: 'https://m.stock.naver.com/' },
+          timeout: 5000,
+        })
+        .catch(() => null);
+      const infos: Array<{ code: string; value: string }> =
+        detailsResponse?.data?.totalInfos || [];
+      const getInfo = (key: string) =>
+        this.parseNumber(infos.find((item) => item.code === key)?.value || '');
+
+      const compareCode = data.compareToPreviousPrice?.name;
+      const rawChange = this.parseFloat(data.compareToPreviousClosePrice);
+      const change =
+        compareCode === 'FALLING'
+          ? -Math.abs(rawChange)
+          : compareCode === 'RISING'
+            ? Math.abs(rawChange)
+            : rawChange;
+      const changeRateValue = this.parseFloat(data.fluctuationsRatio);
+
+      return {
+        code,
+        name: data.stockName,
+        price: this.parseNumber(data.closePrice),
+        change,
+        changeRate: `${changeRateValue.toFixed(2)}%`,
+        changeType:
+          compareCode === 'RISING'
+            ? 'up'
+            : compareCode === 'FALLING'
+              ? 'down'
+              : 'none',
+        volume: getInfo('accumulatedTradingVolume'),
+        high: getInfo('highPrice'),
+        low: getInfo('lowPrice'),
+        open: getInfo('openPrice'),
+        high52w: getInfo('highPriceOf52WeeksAdjusted') || getInfo('highPriceOf52Weeks'),
+        low52w: getInfo('lowPriceOf52WeeksAdjusted') || getInfo('lowPriceOf52Weeks'),
+        updatedAt: new Date().toISOString(),
+        category: 'stock',
+      };
+    } catch (error) {
+      this.logger.error(`Mobile stock API failed for ${code}`, error);
       return null;
     }
   }
