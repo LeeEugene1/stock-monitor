@@ -59,7 +59,7 @@ export class StockService {
         .get<any>(detailsUrl, {
           headers: { ...HEADERS, Referer: 'https://m.stock.naver.com/' },
           timeout: 5000,
-      })
+        })
         .catch(() => null);
       const infos: Array<{ code: string; value: string }> =
         detailsResponse?.data?.totalInfos || [];
@@ -92,8 +92,11 @@ export class StockService {
         high: getInfo('highPrice'),
         low: getInfo('lowPrice'),
         open: getInfo('openPrice'),
-        high52w: getInfo('highPriceOf52WeeksAdjusted') || getInfo('highPriceOf52Weeks'),
-        low52w: getInfo('lowPriceOf52WeeksAdjusted') || getInfo('lowPriceOf52Weeks'),
+        high52w:
+          getInfo('highPriceOf52WeeksAdjusted') ||
+          getInfo('highPriceOf52Weeks'),
+        low52w:
+          getInfo('lowPriceOf52WeeksAdjusted') || getInfo('lowPriceOf52Weeks'),
         updatedAt: new Date().toISOString(),
         category: 'stock',
       };
@@ -230,216 +233,8 @@ export class StockService {
 
   private parseFloat(text: string): number {
     if (!text) return 0;
-    return Number.parseFloat(text.replace(/,/g, '').replace(/[^\d.-]/g, '')) || 0;
+    return (
+      Number.parseFloat(text.replace(/,/g, '').replace(/[^\d.-]/g, '')) || 0
+    );
   }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
